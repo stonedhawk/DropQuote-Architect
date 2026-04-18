@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+:root {
+  color: #0f172a;
+  font-family:
+    'Avenir Next',
+    'Trebuchet MS',
+    'Segoe UI',
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  cursor: pointer;
+  font: inherit;
+}
+
+.arcade-panel {
+  border: 4px solid rgba(255, 255, 255, 0.82);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.74)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(18px);
+}
+
+.arcade-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.35);
+}
+
+.arcade-button {
+  border: 0;
+  border-radius: 18px;
+  padding: 0.95rem 1.15rem;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease;
+}
+
+.arcade-button:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.04);
+}
+
+.arcade-button:active {
+  transform: translateY(3px);
+  box-shadow: none !important;
+}
+
+.tile-pop {
+  animation: tile-bounce 180ms ease-out;
+}
+
+@keyframes tile-bounce {
+  0% {
+    transform: translateY(-6px) scale(0.96);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
