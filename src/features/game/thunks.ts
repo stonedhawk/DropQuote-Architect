@@ -35,6 +35,22 @@ type AppThunk = (dispatch: AppDispatch, getState: () => RootState) => void
 const getAllLockedPositions = (state: RootState) =>
   selectLockedTiles(state).map((tile) => ({ x: tile.x, y: tile.y }))
 
+const getUpcomingPreview = (state: RootState): { preview: TilePreview; fromTutorial: boolean } => {
+  const nextTutorialLetter = state.session.tutorialQueue[0]
+
+  if (nextTutorialLetter) {
+    return {
+      preview: { letter: nextTutorialLetter },
+      fromTutorial: true,
+    }
+  }
+
+  return {
+    preview: createRandomTilePreview(),
+    fromTutorial: false,
+  }
+}
+
 const createRandomTilePreview = (): TilePreview => ({
   letter:
     'AAAEEEIIOOULNRSTDGMPBCFH'[Math.floor(Math.random() * 'AAAEEEIIOOULNRSTDGMPBCFH'.length)] ??
@@ -86,8 +102,18 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
   dispatch(tilesActions.tileSpawned(tile))
   dispatch(sessionActions.activeTileSet(tile.id))
   dispatch(sessionActions.phaseSet('running'))
-  dispatch(sessionActions.nextTilePrepared(createRandomTilePreview()))
-  dispatch(sessionActions.statusMessageSet('Drop in and keep the combo alive.'))
+  const upcoming = getUpcomingPreview(getState())
+  dispatch(sessionActions.nextTilePrepared(upcoming.preview))
+  if (upcoming.fromTutorial) {
+    dispatch(sessionActions.tutorialQueueAdvanced())
+  }
+  dispatch(
+    sessionActions.statusMessageSet(
+      getState().session.tutorialQueue.length > 0
+        ? `Starter queue active. Build easy words like CAT, SUN, and CODE while you learn the flow.`
+        : 'Drop in and keep the combo alive.',
+    ),
+  )
 
   if (queuedPowerUp) {
     dispatch(economyActions.queuedPowerUpCleared())
@@ -269,7 +295,11 @@ const deployWreckingBallAtColumn = (
 
 export const initializeGame = (): AppThunk => (dispatch, getState) => {
   if (!getState().session.nextTile) {
-    dispatch(sessionActions.nextTilePrepared(createRandomTilePreview()))
+    const upcoming = getUpcomingPreview(getState())
+    dispatch(sessionActions.nextTilePrepared(upcoming.preview))
+    if (upcoming.fromTutorial) {
+      dispatch(sessionActions.tutorialQueueAdvanced())
+    }
   }
 
   if (!getState().session.activeTileId && getState().session.phase !== 'game-over') {

@@ -25,6 +25,7 @@ describe('game loop integration', () => {
     store.dispatch(restartGame())
     const firstActive = selectActiveTile(store.getState())
     expect(firstActive).not.toBeNull()
+    expect(firstActive?.letter).toBe('C')
 
     store.dispatch(advanceGameTick())
     const movedTile = selectActiveTile(store.getState())
@@ -36,6 +37,7 @@ describe('game loop integration', () => {
     expect(lockedTiles.length).toBe(1)
     expect(lockedTiles[0]?.y).toBe(19)
     expect(selectActiveTile(store.getState())).not.toBeNull()
+    expect(selectActiveTile(store.getState())?.letter).toBe('A')
   })
 
   it('keeps horizontal movement inside board boundaries', () => {

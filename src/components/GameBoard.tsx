@@ -1,7 +1,10 @@
 import { BOARD_HEIGHT, BOARD_WIDTH } from '../game/constants'
 import { positionKey } from '../game/utils/board'
 import { useAppSelector } from '../app/hooks'
-import { selectTileGrid } from '../features/game/selectors'
+import {
+  selectGhostTilePosition,
+  selectTileGrid,
+} from '../features/game/selectors'
 
 const boardCells = Array.from({ length: BOARD_WIDTH * BOARD_HEIGHT }, (_, index) => ({
   x: index % BOARD_WIDTH,
@@ -10,8 +13,10 @@ const boardCells = Array.from({ length: BOARD_WIDTH * BOARD_HEIGHT }, (_, index)
 
 export const GameBoard = () => {
   const tileGrid = useAppSelector(selectTileGrid)
+  const ghostTile = useAppSelector(selectGhostTilePosition)
   const score = useAppSelector((state) => state.session.score)
   const combo = useAppSelector((state) => state.session.combo)
+  const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
 
   return (
     <section className="arcade-panel flex min-h-[760px] flex-col px-5 py-5">
@@ -33,6 +38,17 @@ export const GameBoard = () => {
         </div>
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm font-bold">
+        <span className="arcade-pill bg-white text-slate-900">
+          Landing shadow shows where the tile will lock
+        </span>
+        {tutorialQueue.length > 0 ? (
+          <span className="arcade-pill bg-emerald-300 text-emerald-950">
+            Tutorial queue: {tutorialQueue.slice(0, 3).join(' → ')}
+          </span>
+        ) : null}
+      </div>
+
       <div className="relative overflow-hidden rounded-[30px] border-[6px] border-white/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.7),_rgba(255,255,255,0.12)),linear-gradient(180deg,_#64d2ff_0%,_#2563eb_35%,_#7c3aed_100%)] p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.25),0_25px_60px_rgba(15,23,42,0.35)]">
         <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_transparent_70%)]" />
 
@@ -40,6 +56,11 @@ export const GameBoard = () => {
           {boardCells.map((cell) => {
             const tile = tileGrid.get(positionKey(cell.x, cell.y))
             const tileLabel = tile?.isWildcard ? '*' : tile?.letter
+            const showGhost =
+              ghostTile &&
+              ghostTile.x === cell.x &&
+              ghostTile.y === cell.y &&
+              !tile
 
             return (
               <div
@@ -47,6 +68,10 @@ export const GameBoard = () => {
                 className="relative aspect-square overflow-hidden rounded-[16px] border-2 border-white/20 bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)]"
               >
                 <div className="absolute inset-0 bg-[linear-gradient(135deg,_rgba(255,255,255,0.12),_transparent_55%)]" />
+
+                {showGhost ? (
+                  <div className="absolute inset-[6px] rounded-[10px] border-2 border-dashed border-white/80 bg-white/12 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]" />
+                ) : null}
 
                 {tile ? (
                   <div

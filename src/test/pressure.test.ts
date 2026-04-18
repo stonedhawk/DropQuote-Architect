@@ -26,10 +26,10 @@ describe('pressure utilities', () => {
   })
 
   it('speeds up tick intervals as pressure increases', () => {
-    expect(getTickIntervalFromPressure(10)).toBe(720)
-    expect(getTickIntervalFromPressure(35)).toBe(560)
-    expect(getTickIntervalFromPressure(55)).toBe(420)
-    expect(getTickIntervalFromPressure(75)).toBe(300)
-    expect(getTickIntervalFromPressure(95)).toBe(200)
+    expect(getTickIntervalFromPressure(10)).toBe(1100)
+    expect(getTickIntervalFromPressure(35)).toBe(820)
+    expect(getTickIntervalFromPressure(55)).toBe(600)
+    expect(getTickIntervalFromPressure(75)).toBe(450)
+    expect(getTickIntervalFromPressure(95)).toBe(340)
   })
 })

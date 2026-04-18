@@ -15,6 +15,7 @@ export const LeftPanel = () => {
   const ink = useAppSelector((state) => state.economy.ink)
   const inventory = useAppSelector((state) => state.economy.inventory)
   const queuedPowerUp = useAppSelector((state) => state.economy.queuedPowerUp)
+  const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
 
   return (
     <aside className="flex flex-col gap-4">
@@ -31,6 +32,12 @@ export const LeftPanel = () => {
             <p className="text-sm font-bold text-slate-800">
               Queue a power-up to transform the next drop.
             </p>
+            {tutorialQueue.length > 0 ? (
+              <div className="rounded-[18px] border-4 border-white bg-emerald-100 px-3 py-3 text-sm font-bold text-emerald-950">
+                Starter assist active. The opening letters are seeded to help you
+                discover easy words first.
+              </div>
+            ) : null}
             {queuedPowerUp ? (
               <div className="space-y-2">
                 <span className="arcade-pill bg-cyan-300 text-cyan-950">

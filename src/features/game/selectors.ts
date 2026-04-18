@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '../../app/store'
 import { getBoardFillPercent, getTickIntervalFromPressure } from '../../game/utils/pressure'
-import { buildOccupancyMap, positionKey } from '../../game/utils/board'
+import { buildOccupancyMap, canOccupyPosition, positionKey } from '../../game/utils/board'
 import { tilesSelectors } from '../tiles/tilesSlice'
 
 export const selectAllTiles = tilesSelectors.selectAll
@@ -40,4 +40,23 @@ export const selectTickInterval = createSelector(
 
 export const selectBoardFillPercent = createSelector([selectLockedTiles], (tiles) =>
   getBoardFillPercent(tiles),
+)
+
+export const selectGhostTilePosition = createSelector(
+  [selectAllTiles, selectActiveTile],
+  (tiles, activeTile) => {
+    if (!activeTile) {
+      return null
+    }
+
+    let ghostY = activeTile.y
+    while (canOccupyPosition(tiles, activeTile.x, ghostY + 1, activeTile.id)) {
+      ghostY += 1
+    }
+
+    return {
+      x: activeTile.x,
+      y: ghostY,
+    }
+  },
 )
