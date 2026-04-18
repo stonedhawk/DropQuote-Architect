@@ -32,6 +32,9 @@ import { tilesActions } from '../tiles/tilesSlice'
 
 type AppThunk = (dispatch: AppDispatch, getState: () => RootState) => void
 
+const getAllLockedPositions = (state: RootState) =>
+  selectLockedTiles(state).map((tile) => ({ x: tile.x, y: tile.y }))
+
 const createRandomTilePreview = (): TilePreview => ({
   letter:
     'AAAEEEIIOOULNRSTDGMPBCFH'[Math.floor(Math.random() * 'AAAEEEIIOOULNRSTDGMPBCFH'.length)] ??
@@ -149,15 +152,20 @@ const resolveBoardAfterLock = (
   while (true) {
     const state = getState()
     const lockedTiles = selectLockedTiles(state)
-    const matches = scanWordsAtPositions(lockedTiles, scanAnchors, isValidWord)
+    const scanPool = [...scanAnchors, ...getAllLockedPositions(state)]
+    const matches = scanWordsAtPositions(lockedTiles, scanPool, isValidWord)
 
     if (matches.length === 0) {
       dispatch(sessionActions.comboSet(clearedAnyWords ? cascadeDepth - 1 : 0))
       dispatch(sessionActions.phaseSet('running'))
-      if (!clearedAnyWords) {
-        dispatch(sessionActions.recentMatchesSet([]))
-        dispatch(sessionActions.statusMessageSet('No clear. Keep stacking!'))
-      }
+    if (!clearedAnyWords) {
+      dispatch(sessionActions.recentMatchesSet([]))
+      dispatch(
+        sessionActions.statusMessageSet(
+          'No clear this drop. Words must be 3+ connected letters in a straight row or column after the tile locks.',
+        ),
+      )
+    }
       break
     }
 
@@ -203,7 +211,7 @@ const resolveBoardAfterLock = (
     scanAnchors =
       collapsed.impactedPositions.length > 0
         ? collapsed.impactedPositions
-        : matches.flatMap((match) => match.cells)
+        : [...matches.flatMap((match) => match.cells), ...getAllLockedPositions(getState())]
 
     dispatch(sessionActions.phaseSet('scanning'))
     dispatch(
@@ -313,7 +321,9 @@ export const moveActiveHorizontally =
     if (moved) {
       dispatch(
         sessionActions.statusMessageSet(
-          deltaX < 0 ? 'Slide left.' : 'Slide right.',
+          deltaX < 0
+            ? 'Slide left. Build 3+ letter words horizontally or vertically.'
+            : 'Slide right. Build 3+ letter words horizontally or vertically.',
         ),
       )
     }

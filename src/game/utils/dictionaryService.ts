@@ -1,33 +1,18 @@
-const fallbackDictionary = new Set([
-  'ARC',
-  'ART',
-  'BAR',
-  'BEE',
-  'BLOCK',
-  'BOARD',
-  'BOLT',
-  'BRICK',
-  'BUILD',
-  'CAB',
+import rawDictionary from '../../data/dictionary.json'
+
+const fallbackDictionary = new Set(
+  (rawDictionary as string[]).map((entry) => entry.toUpperCase()),
+)
+
+export const acceptedExampleWords = [
+  'CAT',
+  'DOG',
+  'SUN',
+  'STAR',
   'CODE',
-  'COLUMN',
-  'DROP',
   'GAME',
-  'GRID',
-  'INK',
-  'LAYER',
-  'LEVEL',
-  'LOCK',
-  'MAP',
-  'MARIO',
-  'MASON',
-  'MORTAR',
-  'NOTE',
-  'ROW',
-  'STACK',
-  'STEEL',
   'TILE',
-  'WORD',
-])
+  'STACK',
+]
 
 export const isValidWord = (word: string) => fallbackDictionary.has(word.toUpperCase())

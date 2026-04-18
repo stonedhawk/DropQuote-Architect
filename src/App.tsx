@@ -66,6 +66,18 @@ function App() {
           {statusMessage}
         </div>
 
+        <div className="mb-4 flex flex-wrap gap-3 text-sm font-bold">
+          <span className="arcade-pill bg-white text-slate-900">
+            Words clear after the tile locks
+          </span>
+          <span className="arcade-pill bg-cyan-300 text-cyan-950">
+            Horizontal or vertical only
+          </span>
+          <span className="arcade-pill bg-amber-300 text-amber-950">
+            Need 3+ letters to score
+          </span>
+        </div>
+
         <section className="grid flex-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
           <LeftPanel />
           <GameBoard />

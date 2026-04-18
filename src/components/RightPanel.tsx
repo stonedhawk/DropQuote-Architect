@@ -1,4 +1,5 @@
 import { useAppSelector } from '../app/hooks'
+import { acceptedExampleWords } from '../game/utils/dictionaryService'
 import { PressureChart } from './PressureChart'
 
 export const RightPanel = () => {
@@ -11,6 +12,49 @@ export const RightPanel = () => {
 
   return (
     <aside className="flex flex-col gap-4">
+      <section className="arcade-panel px-5 py-5">
+        <p className="text-xs font-black uppercase tracking-[0.35em] text-emerald-700">
+          How To Play
+        </p>
+        <div className="mt-4 space-y-3 text-sm font-semibold text-slate-800">
+          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-fuchsia-700">
+              1. Drop and align
+            </p>
+            <p className="mt-2">
+              Every falling tile locks when it lands. A word only clears after that
+              lock happens.
+            </p>
+          </div>
+          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-700">
+              2. Make straight words
+            </p>
+            <p className="mt-2">
+              Valid clears are 3+ connected letters in one horizontal row or one
+              vertical column. Diagonals do not count.
+            </p>
+          </div>
+          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-700">
+              3. Keep pressure low
+            </p>
+            <p className="mt-2">
+              Clearing words frees space, earns Ink, and slows the pressure climb.
+              If pressure reaches 100%, the run ends.
+            </p>
+          </div>
+          <div className="rounded-[20px] border-4 border-dashed border-white/80 bg-white/70 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-600">
+              Good starter words
+            </p>
+            <p className="mt-2 text-base font-black text-slate-950">
+              {acceptedExampleWords.join(' • ')}
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="arcade-panel px-5 py-5">
         <p className="text-xs font-black uppercase tracking-[0.35em] text-amber-700">
           Heat Readout
