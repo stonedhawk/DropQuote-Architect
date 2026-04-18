@@ -1,73 +1,163 @@
-# React + TypeScript + Vite
+# DropQuote Architect
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Arcade-style word-stacking game built with React, Vite, Tailwind CSS v4, and Redux Toolkit entity state.
 
-Currently, two official plugins are available:
+![DropQuote Architect gameplay screenshot](docs/images/dropquote-architect-gameplay.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What It Is
 
-## React Compiler
+DropQuote Architect is a real-time browser game where single letter tiles fall into a 10x20 board. Your goal is to steer each letter into place so that, once it locks, it completes a valid horizontal or vertical word of at least 3 letters.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+When words clear:
 
-## Expanding the ESLint configuration
+- space opens up
+- unsupported tiles fall
+- combos can trigger follow-up clears
+- pressure drops
+- Ink is earned for power-ups
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+If the board gets too crowded and the pressure meter reaches 100%, the run ends.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## How To Play
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Core rules:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- A word only clears after the falling tile locks into the grid.
+- Only straight horizontal or vertical words count.
+- Words must be at least 3 letters long.
+- Diagonal strings do not count.
+- Pressure rises as locked tiles accumulate.
+
+Starter words that are accepted by the current dictionary include:
+
+`CAT`, `DOG`, `SUN`, `STAR`, `CODE`, `GAME`, `TILE`, `STACK`
+
+Controls:
+
+- `Left Arrow` / `Right Arrow`: move the falling tile
+- `Down Arrow`: soft drop
+- `Space`: hard drop
+- `1`, `2`, `3`: use power-ups from inventory slots
+- `C`: clear the queued next-drop modifier
+
+The live UI now includes persistent how-to-play hints and example words so the rules stay visible during gameplay.
+
+## Power-Ups
+
+- `Steel Beams`: modifies the next dropped tile; if that tile is part of a cleared word, the row is fortified and pressure drops sharply.
+- `Wrecking Ball`: destroys an entire column from the current drop lane downward.
+- `Mortar`: turns the next dropped tile into a wildcard.
+
+Power-ups are bought with Ink and stored in a 3-slot side inventory.
+
+## Gameplay Systems
+
+- `Entity-driven board state`: tiles are stored with RTK `createEntityAdapter` instead of a mutable 2D string array.
+- `Discrete tick loop`: falling motion is driven by a custom React hook and RTK actions, with no physics engine.
+- `Word scanning`: valid words are detected from settled board state after each lock/board update.
+- `Cascades`: clears trigger gravity, which can trigger more clears.
+- `Pressure meter`: the fuller the board gets, the faster the global tick rate becomes.
+- `Pressure chart`: rendered through an isolated `PressureChart` adapter so the HUD can evolve without touching game logic.
+
+## Tech Stack
+
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- Redux Toolkit
+- React Redux
+- Vitest
+- Testing Library
+
+## Project Structure
+
+High-signal folders:
+
+- [`src/app`](src/app): Redux store and typed hooks
+- [`src/features`](src/features): slices, selectors, and gameplay thunks
+- [`src/game`](src/game): domain types, constants, and pure utility logic
+- [`src/components`](src/components): UI panels, board, and pressure chart
+- [`src/hooks`](src/hooks): tick loop and keyboard input hooks
+- [`src/test`](src/test): unit and integration tests
+
+Dictionary data lives in `src/data/dictionary.json` and is excluded through `.aiignore`.
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Start the dev server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Run tests:
+
+```bash
+npm test
+```
+
+Run linting:
+
+```bash
+npm run lint
+```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+## Testing Coverage
+
+The current test suite covers:
+
+- collision and movement boundaries
+- word scanning
+- wildcard resolution
+- gravity/collapse behavior
+- pressure scaling
+- game-loop integration
+- power-up behaviors including Wrecking Ball and Steel fortification
+
+## GitHub Pages Deployment
+
+This repo is configured to deploy to GitHub Pages through GitHub Actions.
+
+Expected production URL:
+
+[https://stonedhawk.github.io/DropQuote-Architect/](https://stonedhawk.github.io/DropQuote-Architect/)
+
+The workflow is defined in:
+
+- [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+
+Vite’s Pages base path handling is configured in:
+
+- [`vite.config.ts`](vite.config.ts)
+
+## Current Status
+
+Implemented:
+
+- playable falling-tile loop
+- RTK entity-based board state
+- word clearing and cascades
+- pressure tracking and chart HUD
+- Ink economy and 3 power-ups
+- persistent live gameplay hints
+- test suite and GitHub Pages deployment workflow
+
+Next likely improvements:
+
+- richer dictionary data
+- stronger clear/combo animations and sound
+- title screen and game-over overlay polish
+- more deliberate balance tuning for pressure and Ink
