@@ -8,9 +8,12 @@ interface SessionState {
   combo: number
   activeTileId: string | null
   nextTile: TilePreview | null
+  tutorialQueue: string[]
   recentMatches: WordMatch[]
   statusMessage: string
 }
+
+const starterTutorialQueue = ['C', 'A', 'T', 'S', 'U', 'N', 'C', 'O', 'D', 'E']
 
 const initialState: SessionState = {
   phase: 'idle',
@@ -19,6 +22,7 @@ const initialState: SessionState = {
   combo: 0,
   activeTileId: null,
   nextTile: null,
+  tutorialQueue: starterTutorialQueue,
   recentMatches: [],
   statusMessage: 'Press restart to begin the drop.',
 }
@@ -39,6 +43,9 @@ const sessionSlice = createSlice({
     },
     nextTilePrepared: (state, action: PayloadAction<TilePreview>) => {
       state.nextTile = action.payload
+    },
+    tutorialQueueAdvanced: (state) => {
+      state.tutorialQueue.shift()
     },
     scoreRegistered: (
       state,

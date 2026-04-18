@@ -16,18 +16,18 @@ export const calculateRawPressure = (
 
 export const getTickIntervalFromPressure = (pressure: number) => {
   if (pressure >= 85) {
-    return 200
+    return 340
   }
   if (pressure >= 65) {
-    return 300
+    return 450
   }
   if (pressure >= 45) {
-    return 420
+    return 600
   }
   if (pressure >= 25) {
-    return 560
+    return 820
   }
-  return 720
+  return 1100
 }
 
 export const getBoardFillPercent = (tiles: TileEntity[]) =>
