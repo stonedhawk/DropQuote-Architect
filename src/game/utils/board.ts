@@ -98,6 +98,66 @@ const resolveWildcardWord = (
   return null
 }
 
+const buildMatchCandidates = (
+  axis: Axis,
+  runTiles: TileEntity[],
+  runCells: Position[],
+  isValidWord: (word: string) => boolean,
+) => {
+  const candidates: WordMatch[] = []
+
+  for (let start = 0; start < runTiles.length; start += 1) {
+    for (let end = start + 3; end <= runTiles.length; end += 1) {
+      const sliceTiles = runTiles.slice(start, end)
+      const sliceCells = runCells.slice(start, end)
+      const rawLetters = sliceTiles.map((tile) =>
+        tile.isWildcard ? WILDCARD_SYMBOL : tile.letter.toUpperCase(),
+      )
+      const resolvedText = resolveWildcardWord(rawLetters, isValidWord)
+
+      if (!resolvedText) {
+        continue
+      }
+
+      candidates.push({
+        id: `${axis}-${sliceCells[0].x}-${sliceCells[0].y}-${sliceTiles.length}`,
+        axis,
+        cells: sliceCells,
+        tileIds: sliceTiles.map((tile) => tile.id),
+        resolvedText,
+        usedWildcard: sliceTiles.some((tile) => tile.isWildcard),
+        scoreValue: sliceTiles.length * 100,
+      })
+    }
+  }
+
+  candidates.sort((left, right) => {
+    if (right.tileIds.length !== left.tileIds.length) {
+      return right.tileIds.length - left.tileIds.length
+    }
+
+    if (left.cells[0].y !== right.cells[0].y) {
+      return left.cells[0].y - right.cells[0].y
+    }
+
+    return left.cells[0].x - right.cells[0].x
+  })
+
+  const chosen: WordMatch[] = []
+  const usedTiles = new Set<string>()
+
+  candidates.forEach((candidate) => {
+    if (candidate.tileIds.some((tileId) => usedTiles.has(tileId))) {
+      return
+    }
+
+    candidate.tileIds.forEach((tileId) => usedTiles.add(tileId))
+    chosen.push(candidate)
+  })
+
+  return chosen
+}
+
 export const scanWordsAtPositions = (
   tiles: TileEntity[],
   anchors: Position[],
@@ -124,24 +184,7 @@ export const scanWordsAtPositions = (
       }
       seen.add(dedupeKey)
 
-      const rawLetters = run.tiles.map((tile) =>
-        tile.isWildcard ? WILDCARD_SYMBOL : tile.letter.toUpperCase(),
-      )
-      const resolvedText = resolveWildcardWord(rawLetters, isValidWord)
-      if (!resolvedText) {
-        return
-      }
-
-      const usedWildcard = run.tiles.some((tile) => tile.isWildcard)
-      matches.push({
-        id: `${axis}-${run.cells[0].x}-${run.cells[0].y}`,
-        axis,
-        cells: run.cells,
-        tileIds: run.tiles.map((tile) => tile.id),
-        resolvedText,
-        usedWildcard,
-        scoreValue: run.tiles.length * 100,
-      })
+      matches.push(...buildMatchCandidates(axis, run.tiles, run.cells, isValidWord))
     })
   })
 
