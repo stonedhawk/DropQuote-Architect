@@ -40,6 +40,25 @@ describe('board utilities', () => {
     expect(matches[0]?.axis).toBe('horizontal')
   })
 
+  it('finds valid words inside a longer contiguous run', () => {
+    const tiles = [
+      createTile({ id: 'c', letter: 'C', x: 0, y: 19 }),
+      createTile({ id: 'a', letter: 'A', x: 1, y: 19 }),
+      createTile({ id: 't', letter: 'T', x: 2, y: 19 }),
+      createTile({ id: 'd', letter: 'D', x: 3, y: 19 }),
+      createTile({ id: 'o', letter: 'O', x: 4, y: 19 }),
+      createTile({ id: 'g', letter: 'G', x: 5, y: 19 }),
+    ]
+
+    const matches = scanWordsAtPositions(
+      tiles,
+      [{ x: 2, y: 19 }],
+      (word) => word === 'CAT' || word === 'DOG',
+    )
+
+    expect(matches.map((match) => match.resolvedText).sort()).toEqual(['CAT', 'DOG'])
+  })
+
   it('resolves wildcard tiles without brute forcing the board', () => {
     const tiles = [
       createTile({ id: 'c', letter: 'C', x: 5, y: 10 }),
