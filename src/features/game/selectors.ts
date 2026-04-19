@@ -88,8 +88,12 @@ export const selectProjectedMatches = createSelector(
 )
 
 export const selectTutorialCoach = createSelector(
-  [selectLockedTiles, selectActiveTile, (state: RootState) => state.session.score],
-  (lockedTiles, activeTile, score) => {
+  [
+    selectLockedTiles,
+    selectActiveTile,
+    (state: RootState) => state.session.guidedOpeningComplete,
+  ],
+  (lockedTiles, activeTile, guidedOpeningComplete) => {
     const targetCells = tutorialColumns.map((x, index) => ({
       x,
       y: 19,
@@ -105,7 +109,7 @@ export const selectTutorialCoach = createSelector(
       return tile?.letter === cell.letter ? count + 1 : count
     }, 0)
 
-    const active = score === 0 && matchedCount < tutorialWord.length
+    const active = !guidedOpeningComplete && matchedCount < tutorialWord.length
     const currentTarget = targetCells[matchedCount] ?? null
 
     return {
@@ -124,3 +128,20 @@ export const selectTutorialCoach = createSelector(
     }
   },
 )
+
+export const selectProjectedClearCells = createSelector(
+  [selectProjectedMatches],
+  (projectedMatches) =>
+    projectedMatches.flatMap((match) =>
+      match.cells.map((cell) => positionKey(cell.x, cell.y)),
+    ),
+)
+
+export const selectCelebration = (state: RootState) => state.session.celebration
+export const selectCurrentObjective = (state: RootState) => state.session.objective
+export const selectGameOverSummary = (state: RootState) => state.session.gameOverSummary
+export const selectAudioState = (state: RootState) => ({
+  unlocked: state.session.audioUnlocked,
+  muted: state.session.audioMuted,
+  cue: state.session.lastAudioCue,
+})
