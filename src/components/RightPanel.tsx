@@ -41,7 +41,7 @@ export const RightPanel = () => {
             </p>
             <p className="mt-2">
               Valid clears are 3+ connected letters in one horizontal row or one
-              vertical column. Diagonals do not count.
+              vertical column. Both reading directions count. Diagonals do not count.
             </p>
           </div>
           <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
@@ -100,7 +100,7 @@ export const RightPanel = () => {
               Live Objective
             </p>
             <h3 className="text-2xl font-black text-slate-950">
-              {objective?.title ?? 'Unlock with first clear'}
+              {objective?.title ?? 'Unlock after 3 clears'}
             </h3>
           </div>
           <button
@@ -147,7 +147,7 @@ export const RightPanel = () => {
           </div>
         ) : (
           <div className="mt-4 rounded-[20px] border-4 border-dashed border-white/70 bg-white/60 px-4 py-4 text-sm font-semibold text-slate-700">
-            Clear your first guided word to start the rotating objective loop.
+            Clear 3 total words to start the rotating objective loop.
           </div>
         )}
       </section>

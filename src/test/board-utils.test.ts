@@ -59,6 +59,19 @@ describe('board utilities', () => {
     expect(matches.map((match) => match.resolvedText).sort()).toEqual(['CAT', 'DOG'])
   })
 
+  it('accepts reverse horizontal words without double-counting the same tiles', () => {
+    const tiles = [
+      createTile({ id: 'd', letter: 'D', x: 0, y: 18 }),
+      createTile({ id: 'o', letter: 'O', x: 1, y: 18 }),
+      createTile({ id: 'c', letter: 'C', x: 2, y: 18 }),
+    ]
+
+    const matches = scanWordsAtPositions(tiles, [{ x: 1, y: 18 }], (word) => word === 'COD')
+
+    expect(matches).toHaveLength(1)
+    expect(matches[0]?.resolvedText).toBe('COD')
+  })
+
   it('resolves wildcard tiles without brute forcing the board', () => {
     const tiles = [
       createTile({ id: 'c', letter: 'C', x: 5, y: 10 }),
@@ -70,6 +83,20 @@ describe('board utilities', () => {
 
     expect(matches).toHaveLength(1)
     expect(matches[0]?.resolvedText).toBe('CAB')
+    expect(matches[0]?.usedWildcard).toBe(true)
+  })
+
+  it('resolves wildcard tiles for reverse vertical words too', () => {
+    const tiles = [
+      createTile({ id: 't', letter: 'T', x: 5, y: 10 }),
+      createTile({ id: 'wild', letter: '?', x: 5, y: 11, isWildcard: true }),
+      createTile({ id: 'c', letter: 'C', x: 5, y: 12 }),
+    ]
+
+    const matches = scanWordsAtPositions(tiles, [{ x: 5, y: 11 }], (word) => word === 'CAT')
+
+    expect(matches).toHaveLength(1)
+    expect(matches[0]?.resolvedText).toBe('CAT')
     expect(matches[0]?.usedWildcard).toBe(true)
   })
 

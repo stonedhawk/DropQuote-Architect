@@ -32,6 +32,8 @@ interface SessionState {
   lastAudioCue: AudioCueEvent | null
   recentMatches: WordMatch[]
   statusMessage: string
+  totalWordsCleared: number
+  assistCursor: number
 }
 
 const initialState: SessionState = {
@@ -55,6 +57,8 @@ const initialState: SessionState = {
   lastAudioCue: null,
   recentMatches: [],
   statusMessage: 'Press restart to begin the drop.',
+  totalWordsCleared: 0,
+  assistCursor: 0,
 }
 
 const sessionSlice = createSlice({
@@ -87,6 +91,12 @@ const sessionSlice = createSlice({
     },
     comboSet: (state, action: PayloadAction<number>) => {
       state.combo = action.payload
+    },
+    wordsClearedAdded: (state, action: PayloadAction<number>) => {
+      state.totalWordsCleared += action.payload
+    },
+    assistCursorAdvanced: (state) => {
+      state.assistCursor += 1
     },
     guidedOpeningCompleted: (state) => {
       state.guidedOpeningComplete = true
