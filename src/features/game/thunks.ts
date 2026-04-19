@@ -176,6 +176,20 @@ const maybeStartObjectiveLoop = (dispatch: AppDispatch, getState: () => RootStat
   return true
 }
 
+const completeGuidedOpeningIfNeeded = (
+  dispatch: AppDispatch,
+  getState: () => RootState,
+) => {
+  const state = getState()
+
+  if (state.session.guidedOpeningComplete) {
+    return false
+  }
+
+  dispatch(sessionActions.guidedOpeningCompleted())
+  return true
+}
+
 const grantObjectiveReward = (
   dispatch: AppDispatch,
   getState: () => RootState,
@@ -330,7 +344,12 @@ const applyPressureSnapshot = (dispatch: AppDispatch, getState: () => RootState)
     dispatch(sessionActions.objectiveProgressSet(0))
   }
 
-  if (previousPressure < 80 && currentPressure >= 80) {
+  const activeCelebration = getState().session.celebration
+  if (
+    previousPressure < 80 &&
+    currentPressure >= 80 &&
+    (!activeCelebration || activeCelebration.tone === 'warning')
+  ) {
     dispatch(sessionActions.audioCueEmitted('pressure-danger'))
     dispatch(
       sessionActions.celebrationSet({
@@ -375,6 +394,15 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
   if (upcoming.fromTutorial) {
     dispatch(sessionActions.tutorialQueueAdvanced())
   }
+
+  let guidedOpeningCompleted = false
+  if (getState().session.tutorialQueue.length === 0) {
+    guidedOpeningCompleted = completeGuidedOpeningIfNeeded(dispatch, getState)
+  }
+  if (guidedOpeningCompleted) {
+    maybeStartObjectiveLoop(dispatch, getState)
+  }
+
   dispatch(
     sessionActions.statusMessageSet(
       getState().session.tutorialQueue.length > 0
@@ -465,14 +493,6 @@ const resolveBoardAfterLock = (
     resolvedWords.push(...matches.map((match) => match.resolvedText))
     resolvedMatches.push(...matches)
 
-    if (
-      !getState().session.guidedOpeningComplete &&
-      matches.some((match) => match.resolvedText === 'CAT')
-    ) {
-      dispatch(sessionActions.guidedOpeningCompleted())
-      completedGuidedOpening = true
-    }
-
     dispatch(sessionActions.phaseSet('clearing'))
 
     const idsToRemove = Array.from(new Set(matches.flatMap((match) => match.tileIds)))
@@ -524,6 +544,7 @@ const resolveBoardAfterLock = (
   }
 
   if (clearedAnyWords) {
+    completedGuidedOpening = completeGuidedOpeningIfNeeded(dispatch, getState) || completedGuidedOpening
     const stateAfterClears = getState()
     const bestWord = chooseBestWord(stateAfterClears.session.bestWord, resolvedWords)
     const latestWord = resolvedWords[resolvedWords.length - 1] ?? stateAfterClears.session.latestWord

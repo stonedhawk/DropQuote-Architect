@@ -156,6 +156,32 @@ describe('game loop integration', () => {
     expect(store.getState().session.objective?.id).toBe('double-clear-run')
   })
 
+  it('unlocks objectives when the first clear is valid but not CAT', () => {
+    const store = createAppStore()
+
+    store.dispatch(restartGame())
+    store.dispatch(
+      tilesActions.tileSpawned(
+        createLockedTile({ id: 'cab-a', letter: 'A', x: 3, y: 19 }),
+      ),
+    )
+    store.dispatch(
+      tilesActions.tileSpawned(
+        createLockedTile({ id: 'cab-b', letter: 'B', x: 4, y: 19 }),
+      ),
+    )
+
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(hardDropActiveTile())
+
+    expect(store.getState().session.recentMatches.map((match) => match.resolvedText)).toContain('CAB')
+    expect(store.getState().session.guidedOpeningComplete).toBe(true)
+    expect(store.getState().session.objective?.id).toBe('double-clear-run')
+    expect(selectTutorialCoach(store.getState()).active).toBe(false)
+  })
+
   it('completes the double-clear objective and rotates to the next one', () => {
     const store = createAppStore()
 
@@ -239,5 +265,19 @@ describe('game loop integration', () => {
     expect(store.getState().session.gameOverSummary).toBeNull()
     expect(store.getState().pressure.history).toEqual([{ tick: 0, pressure: 0 }])
     expect(store.getState().session.guidedOpeningComplete).toBe(false)
+  })
+
+  it('emits unique audio cue ids across repeated restarts', () => {
+    const store = createAppStore()
+
+    store.dispatch(restartGame())
+    const firstCueId = store.getState().session.lastAudioCue?.id
+
+    store.dispatch(restartGame())
+    const secondCueId = store.getState().session.lastAudioCue?.id
+
+    expect(firstCueId).toBeTruthy()
+    expect(secondCueId).toBeTruthy()
+    expect(secondCueId).not.toBe(firstCueId)
   })
 })
