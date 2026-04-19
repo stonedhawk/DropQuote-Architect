@@ -20,8 +20,11 @@ export const useTouchControls = (boardRef: RefObject<HTMLElement | null>) => {
     startX: number
     startY: number
   } | null>(null)
+  const pendingTapRef = useRef<{
+    activeTileId: string
+    targetColumn: number
+  } | null>(null)
   const lastTapTimerRef = useRef<number | null>(null)
-  const pendingTapColumnRef = useRef<number | null>(null)
   const activeTileRef = useRef(activeTile)
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export const useTouchControls = (boardRef: RefObject<HTMLElement | null>) => {
       window.clearTimeout(lastTapTimerRef.current)
       lastTapTimerRef.current = null
     }
-    pendingTapColumnRef.current = null
+    pendingTapRef.current = null
   })
 
   const moveToColumn = useEffectEvent((targetColumn: number) => {
@@ -92,6 +95,12 @@ export const useTouchControls = (boardRef: RefObject<HTMLElement | null>) => {
       return
     }
 
+    const activeTileId = activeTileRef.current?.id
+    if (!activeTileId) {
+      clearPendingTap()
+      return
+    }
+
     const bounds = board.getBoundingClientRect()
     const relativeX = Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width - 1)
     const targetColumn = Math.max(
@@ -99,20 +108,28 @@ export const useTouchControls = (boardRef: RefObject<HTMLElement | null>) => {
       Math.min(BOARD_WIDTH - 1, Math.floor((relativeX / bounds.width) * BOARD_WIDTH)),
     )
 
-    if (lastTapTimerRef.current !== null) {
+    if (
+      lastTapTimerRef.current !== null &&
+      pendingTapRef.current?.activeTileId === activeTileId &&
+      pendingTapRef.current.targetColumn === targetColumn
+    ) {
       clearPendingTap()
       dispatch(hardDropActiveTile())
       event.preventDefault()
       return
     }
 
-    pendingTapColumnRef.current = targetColumn
+    clearPendingTap()
+    pendingTapRef.current = {
+      activeTileId,
+      targetColumn,
+    }
     lastTapTimerRef.current = window.setTimeout(() => {
-      const pendingColumn = pendingTapColumnRef.current
+      const pendingTap = pendingTapRef.current
       clearPendingTap()
 
-      if (pendingColumn !== null) {
-        moveToColumn(pendingColumn)
+      if (pendingTap && activeTileRef.current?.id === pendingTap.activeTileId) {
+        moveToColumn(pendingTap.targetColumn)
       }
     }, DOUBLE_TAP_DELAY_MS)
 
