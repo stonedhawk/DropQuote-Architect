@@ -4,6 +4,7 @@ import { useAppSelector } from '../app/hooks'
 import {
   selectGhostTilePosition,
   selectTileGrid,
+  selectTutorialCoach,
 } from '../features/game/selectors'
 
 const boardCells = Array.from({ length: BOARD_WIDTH * BOARD_HEIGHT }, (_, index) => ({
@@ -17,6 +18,7 @@ export const GameBoard = () => {
   const score = useAppSelector((state) => state.session.score)
   const combo = useAppSelector((state) => state.session.combo)
   const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
+  const tutorialCoach = useAppSelector(selectTutorialCoach)
 
   return (
     <section className="arcade-panel flex min-h-[760px] flex-col px-5 py-5">
@@ -61,13 +63,41 @@ export const GameBoard = () => {
               ghostTile.x === cell.x &&
               ghostTile.y === cell.y &&
               !tile
+            const tutorialPad = tutorialCoach.targetCells.find(
+              (targetCell) => targetCell.x === cell.x && targetCell.y === cell.y,
+            )
+            const isCurrentPad =
+              tutorialCoach.currentTarget?.x === cell.x &&
+              tutorialCoach.currentTarget?.y === cell.y
 
             return (
               <div
                 key={`${cell.x}-${cell.y}`}
-                className="relative aspect-square overflow-hidden rounded-[16px] border-2 border-white/20 bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)]"
+                className={[
+                  'relative aspect-square overflow-hidden rounded-[16px] border-2 bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)]',
+                  tutorialPad
+                    ? isCurrentPad
+                      ? 'border-emerald-200 bg-emerald-200/18 shadow-[inset_0_0_0_2px_rgba(255,255,255,0.25),0_0_0_2px_rgba(16,185,129,0.4)]'
+                      : 'border-emerald-100/70 bg-emerald-100/12'
+                    : 'border-white/20',
+                ].join(' ')}
               >
                 <div className="absolute inset-0 bg-[linear-gradient(135deg,_rgba(255,255,255,0.12),_transparent_55%)]" />
+
+                {tutorialPad ? (
+                  <div className="pointer-events-none absolute inset-0 flex items-end justify-center pb-1">
+                    <span
+                      className={[
+                        'rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.2em]',
+                        isCurrentPad
+                          ? 'bg-emerald-300 text-emerald-950'
+                          : 'bg-white/80 text-emerald-900',
+                      ].join(' ')}
+                    >
+                      {tutorialPad.letter}
+                    </span>
+                  </div>
+                ) : null}
 
                 {showGhost ? (
                   <div className="absolute inset-[6px] rounded-[10px] border-2 border-dashed border-white/80 bg-white/12 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]" />

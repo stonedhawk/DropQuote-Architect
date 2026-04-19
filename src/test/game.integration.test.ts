@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createAppStore } from '../app/store'
 import { economyActions } from '../features/economy/economySlice'
 import { advanceGameTick, activateInventorySlot, buyPowerUp, hardDropActiveTile, initializeGame, moveActiveHorizontally, restartGame } from '../features/game/thunks'
-import { selectActiveTile, selectLockedTiles } from '../features/game/selectors'
+import { selectActiveTile, selectLockedTiles, selectProjectedMatches, selectTutorialCoach } from '../features/game/selectors'
 import { sessionActions } from '../features/session/sessionSlice'
 import { tilesActions } from '../features/tiles/tilesSlice'
 import type { TileEntity } from '../game/types'
@@ -38,6 +38,7 @@ describe('game loop integration', () => {
     expect(lockedTiles[0]?.y).toBe(19)
     expect(selectActiveTile(store.getState())).not.toBeNull()
     expect(selectActiveTile(store.getState())?.letter).toBe('A')
+    expect(selectTutorialCoach(store.getState()).currentTarget?.letter).toBe('C')
   })
 
   it('keeps horizontal movement inside board boundaries', () => {
@@ -122,5 +123,19 @@ describe('game loop integration', () => {
     expect(store.getState().pressure.fortifiedRows).toContain(19)
     expect(store.getState().pressure.current).toBe(0)
     expect(store.getState().pressure.history.length).toBeGreaterThan(1)
+  })
+
+  it('previews a clear when the active tile would finish the guided word', () => {
+    const store = createAppStore()
+
+    store.dispatch(restartGame())
+    store.dispatch(hardDropActiveTile()) // C
+    store.dispatch(moveActiveHorizontally(1))
+    store.dispatch(hardDropActiveTile()) // A
+    store.dispatch(moveActiveHorizontally(2))
+
+    const projectedMatches = selectProjectedMatches(store.getState())
+
+    expect(projectedMatches.map((match) => match.resolvedText)).toContain('CAT')
   })
 })

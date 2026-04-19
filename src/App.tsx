@@ -7,7 +7,9 @@ import { restartGame } from './features/game/thunks'
 import {
   selectActiveTile,
   selectBoardFillPercent,
+  selectProjectedMatches,
   selectTickInterval,
+  selectTutorialCoach,
 } from './features/game/selectors'
 import { useGameInput } from './hooks/useGameInput'
 import { useGameTick } from './hooks/useGameTick'
@@ -19,6 +21,8 @@ function App() {
   const phase = useAppSelector((state) => state.session.phase)
   const statusMessage = useAppSelector((state) => state.session.statusMessage)
   const boardFill = useAppSelector(selectBoardFillPercent)
+  const projectedMatches = useAppSelector(selectProjectedMatches)
+  const tutorialCoach = useAppSelector(selectTutorialCoach)
 
   useEffect(() => {
     dispatch(restartGame())
@@ -66,6 +70,20 @@ function App() {
           {statusMessage}
         </div>
 
+        {tutorialCoach.active ? (
+          <div className="mb-4 arcade-panel border-emerald-200/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(209,250,229,0.92))] px-5 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.34em] text-emerald-700">
+              Guided Opening
+            </p>
+            <p className="mt-2 text-xl font-black text-slate-950">
+              {tutorialCoach.message}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-800">
+              {tutorialCoach.helper}
+            </p>
+          </div>
+        ) : null}
+
         <div className="mb-4 flex flex-wrap gap-3 text-sm font-bold">
           <span className="arcade-pill bg-white text-slate-900">
             Words clear after the tile locks
@@ -76,6 +94,11 @@ function App() {
           <span className="arcade-pill bg-amber-300 text-amber-950">
             Need 3+ letters to score
           </span>
+          {projectedMatches.length > 0 ? (
+            <span className="arcade-pill bg-emerald-300 text-emerald-950">
+              If you drop now: {projectedMatches.map((match) => match.resolvedText).join(', ')}
+            </span>
+          ) : null}
         </div>
 
         <section className="grid flex-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
