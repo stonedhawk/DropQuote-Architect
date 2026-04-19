@@ -1,5 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '../../app/store'
+import { scanWordsAtPositions } from '../../game/utils/board'
+import { isValidWord } from '../../game/utils/dictionaryService'
 import { getBoardFillPercent, getTickIntervalFromPressure } from '../../game/utils/pressure'
 import { buildOccupancyMap, canOccupyPosition, positionKey } from '../../game/utils/board'
 import { tilesSelectors } from '../tiles/tilesSlice'
@@ -57,6 +59,68 @@ export const selectGhostTilePosition = createSelector(
     return {
       x: activeTile.x,
       y: ghostY,
+    }
+  },
+)
+
+const tutorialColumns = [4, 5, 6]
+const tutorialWord = ['C', 'A', 'T']
+
+export const selectProjectedMatches = createSelector(
+  [selectLockedTiles, selectActiveTile, selectGhostTilePosition],
+  (lockedTiles, activeTile, ghostTile) => {
+    if (!activeTile || !ghostTile) {
+      return []
+    }
+
+    const simulatedTiles = [
+      ...lockedTiles,
+      {
+        ...activeTile,
+        x: ghostTile.x,
+        y: ghostTile.y,
+        isMoving: false,
+      },
+    ]
+
+    return scanWordsAtPositions(simulatedTiles, [ghostTile], isValidWord)
+  },
+)
+
+export const selectTutorialCoach = createSelector(
+  [selectLockedTiles, selectActiveTile, (state: RootState) => state.session.score],
+  (lockedTiles, activeTile, score) => {
+    const targetCells = tutorialColumns.map((x, index) => ({
+      x,
+      y: 19,
+      letter: tutorialWord[index],
+    }))
+
+    const matchedCount = targetCells.reduce((count, cell, index) => {
+      if (count !== index) {
+        return count
+      }
+
+      const tile = lockedTiles.find((candidate) => candidate.x === cell.x && candidate.y === cell.y)
+      return tile?.letter === cell.letter ? count + 1 : count
+    }, 0)
+
+    const active = score === 0 && matchedCount < tutorialWord.length
+    const currentTarget = targetCells[matchedCount] ?? null
+
+    return {
+      active,
+      matchedCount,
+      targetCells,
+      currentTarget,
+      message: currentTarget
+        ? `Guided opener: place ${currentTarget.letter} on the glowing pad in column ${currentTarget.x + 1}.`
+        : 'Guided opener complete.',
+      helper: currentTarget
+        ? activeTile
+          ? `Current tile: ${activeTile.letter}. Move it with the arrows, then let it lock on the highlighted bottom pad.`
+          : 'A new tile is about to spawn for the guided opener.'
+        : 'You cleared your first guided word. Nice.',
     }
   },
 )
