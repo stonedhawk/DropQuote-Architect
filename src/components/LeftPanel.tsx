@@ -45,7 +45,7 @@ export const LeftPanel = () => {
                 </span>
                 <button
                   type="button"
-                  className="arcade-button bg-slate-800 text-white shadow-[0_10px_0_#0f172a]"
+                  className="arcade-button min-h-11 bg-slate-800 text-white shadow-[0_10px_0_#0f172a]"
                   onClick={() => dispatch(clearQueuedPowerUp())}
                 >
                   Clear Queue
@@ -79,7 +79,7 @@ export const LeftPanel = () => {
                 key={powerUp}
                 type="button"
                 className={[
-                  'rounded-[22px] border-4 px-4 py-4 text-left transition',
+                  'min-h-11 rounded-[22px] border-4 px-4 py-4 text-left transition',
                   canAfford && !inventoryFull
                     ? 'border-white bg-white/75 text-slate-950 hover:-translate-y-0.5 hover:bg-white'
                     : 'border-white/50 bg-white/45 text-slate-500',
@@ -130,7 +130,7 @@ export const LeftPanel = () => {
                 key={`inventory-${index}`}
                 type="button"
                 className={[
-                  'rounded-[20px] border-4 px-4 py-4 text-left transition',
+                  'min-h-11 rounded-[20px] border-4 px-4 py-4 text-left transition',
                   powerUp
                     ? 'border-white bg-[linear-gradient(180deg,_rgba(255,255,255,0.94),_rgba(255,255,255,0.75))] hover:-translate-y-0.5'
                     : 'border-dashed border-white/45 bg-white/30 text-slate-500',
