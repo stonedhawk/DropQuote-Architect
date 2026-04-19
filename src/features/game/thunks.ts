@@ -1,6 +1,7 @@
 import type { AppDispatch, RootState } from '../../app/store'
 import {
   LETTER_BAG,
+  MIN_WORDS_BEFORE_OBJECTIVES,
   POWER_UP_COSTS,
   POWER_UP_LABELS,
   PRESSURE_OBJECTIVE_THRESHOLD,
@@ -21,6 +22,7 @@ import {
   collapseFloatingTiles,
   scanWordsAtPositions,
 } from '../../game/utils/board'
+import { createFunFirstPreview } from '../../game/utils/assist'
 import { isValidWord } from '../../game/utils/dictionaryService'
 import { createObjectiveState, getNextObjectiveId, rewardCanBeGranted } from '../../game/utils/objectives'
 import { calculateRawPressure } from '../../game/utils/pressure'
@@ -53,13 +55,13 @@ const getUpcomingPreview = (state: RootState): { preview: TilePreview; fromTutor
 
   if (nextTutorialLetter) {
     return {
-      preview: { letter: nextTutorialLetter },
+      preview: { letter: nextTutorialLetter, assistMode: 'tutorial' },
       fromTutorial: true,
     }
   }
 
   return {
-    preview: createRandomTilePreview(),
+    preview: createFunFirstPreview(selectAllTiles(state), state.session.assistCursor),
     fromTutorial: false,
   }
 }
@@ -114,7 +116,7 @@ const buildClearCelebration = (
   if (completedGuidedOpening) {
     return {
       title: 'First Word Cleared!',
-      body: `You popped ${summary.resolvedWords.join(' + ')} and unlocked the live objective lane.`,
+      body: `You popped ${summary.resolvedWords.join(' + ')} and the easy-assist phase is now fully live.`,
       tone: 'success',
     }
   }
@@ -168,7 +170,11 @@ const setGameOver = (
 const maybeStartObjectiveLoop = (dispatch: AppDispatch, getState: () => RootState) => {
   const state = getState()
 
-  if (!state.session.guidedOpeningComplete || state.session.objective) {
+  if (
+    !state.session.guidedOpeningComplete ||
+    state.session.objective ||
+    state.session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES
+  ) {
     return false
   }
 
@@ -393,6 +399,8 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
   dispatch(sessionActions.nextTilePrepared(upcoming.preview))
   if (upcoming.fromTutorial) {
     dispatch(sessionActions.tutorialQueueAdvanced())
+  } else {
+    dispatch(sessionActions.assistCursorAdvanced())
   }
 
   let guidedOpeningCompleted = false
@@ -409,7 +417,9 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
         ? 'Starter queue active. Follow the glowing pads and build your first easy clears.'
         : getState().session.objective
           ? `${getState().session.objective?.title}: ${getState().session.objective?.description}`
-          : 'Drop in and keep the combo alive.',
+          : getState().session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES
+            ? `Fun-first assist is live. Clear ${MIN_WORDS_BEFORE_OBJECTIVES - getState().session.totalWordsCleared} more word${MIN_WORDS_BEFORE_OBJECTIVES - getState().session.totalWordsCleared === 1 ? '' : 's'} to unlock live objectives.`
+            : 'Drop in and keep the combo alive.',
     ),
   )
 
@@ -479,7 +489,7 @@ const resolveBoardAfterLock = (
         resetRunScopedObjectiveProgress(dispatch, getState)
         dispatch(
           sessionActions.statusMessageSet(
-            'No clear this drop. Words must be 3+ connected letters in a straight row or column after the tile locks.',
+            'No clear this drop. Words must be 3+ connected letters in a straight row or column after the tile locks, and reverse words count too.',
           ),
         )
       }
@@ -562,6 +572,7 @@ const resolveBoardAfterLock = (
         latestWord,
       }),
     )
+    dispatch(sessionActions.wordsClearedAdded(clearedWords))
     dispatch(sessionActions.recentMatchesSet(resolvedMatches))
     dispatch(sessionActions.celebrationSet(buildClearCelebration(summary, completedGuidedOpening)))
 
@@ -572,10 +583,12 @@ const resolveBoardAfterLock = (
       dispatch(
         sessionActions.statusMessageSet(
           startedObjective
-            ? 'First clear locked in. Objectives are now live on the HUD.'
+            ? 'You have enough clears. Objectives are now live on the HUD.'
             : maxCascade > 1
               ? `Cascade x${maxCascade}! Cleared ${resolvedWords.join(' + ')}.`
-              : `Cleared ${resolvedWords.join(' + ')}.`,
+              : getState().session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES
+                ? `Cleared ${resolvedWords.join(' + ')}. Fun-first assist stays on until you reach ${MIN_WORDS_BEFORE_OBJECTIVES} total clears.`
+                : `Cleared ${resolvedWords.join(' + ')}.`,
         ),
       )
     }
@@ -634,6 +647,8 @@ export const initializeGame = (): AppThunk => (dispatch, getState) => {
     dispatch(sessionActions.nextTilePrepared(upcoming.preview))
     if (upcoming.fromTutorial) {
       dispatch(sessionActions.tutorialQueueAdvanced())
+    } else {
+      dispatch(sessionActions.assistCursorAdvanced())
     }
   }
 

@@ -133,7 +133,7 @@ function App() {
             Words clear after the tile locks
           </span>
           <span className="arcade-pill bg-cyan-300 text-cyan-950">
-            Horizontal or vertical only
+            Horizontal or vertical, both directions count
           </span>
           <span className="arcade-pill bg-amber-300 text-amber-950">
             Need 3+ letters to score

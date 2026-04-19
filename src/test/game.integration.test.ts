@@ -153,7 +153,7 @@ describe('game loop integration', () => {
     expect(store.getState().session.recentMatches.map((match) => match.resolvedText)).toContain('CAT')
     expect(store.getState().session.score).toBeGreaterThan(0)
     expect(selectTutorialCoach(store.getState()).active).toBe(false)
-    expect(store.getState().session.objective?.id).toBe('double-clear-run')
+    expect(store.getState().session.objective).toBeNull()
   })
 
   it('unlocks objectives when the first clear is valid but not CAT', () => {
@@ -178,14 +178,43 @@ describe('game loop integration', () => {
 
     expect(store.getState().session.recentMatches.map((match) => match.resolvedText)).toContain('CAB')
     expect(store.getState().session.guidedOpeningComplete).toBe(true)
-    expect(store.getState().session.objective?.id).toBe('double-clear-run')
+    expect(store.getState().session.objective).toBeNull()
     expect(selectTutorialCoach(store.getState()).active).toBe(false)
+  })
+
+  it('delays objectives until the player has cleared a few words', () => {
+    const store = createAppStore()
+
+    store.dispatch(sessionActions.guidedOpeningCompleted())
+    store.dispatch(sessionActions.wordsClearedAdded(2))
+    store.dispatch(sessionActions.nextTilePrepared({ letter: 'C' }))
+    store.dispatch(
+      tilesActions.tileSpawned(
+        createLockedTile({ id: 'cab-a', letter: 'A', x: 3, y: 19 }),
+      ),
+    )
+    store.dispatch(
+      tilesActions.tileSpawned(
+        createLockedTile({ id: 'cab-b', letter: 'B', x: 4, y: 19 }),
+      ),
+    )
+    store.dispatch(initializeGame())
+
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(hardDropActiveTile())
+
+    expect(store.getState().session.recentMatches.map((match) => match.resolvedText)).toContain('CAB')
+    expect(store.getState().session.totalWordsCleared).toBeGreaterThanOrEqual(3)
+    expect(store.getState().session.objective?.id).toBe('double-clear-run')
   })
 
   it('completes the double-clear objective and rotates to the next one', () => {
     const store = createAppStore()
 
     store.dispatch(sessionActions.guidedOpeningCompleted())
+    store.dispatch(sessionActions.wordsClearedAdded(3))
     store.dispatch(sessionActions.objectiveSet(createObjectiveState('double-clear-run')))
     store.dispatch(sessionActions.nextTilePrepared({ letter: 'C' }))
     store.dispatch(
@@ -257,6 +286,7 @@ describe('game loop integration', () => {
         combo: 3,
       }),
     )
+    store.dispatch(sessionActions.wordsClearedAdded(5))
 
     store.dispatch(restartGame())
 
@@ -265,6 +295,7 @@ describe('game loop integration', () => {
     expect(store.getState().session.gameOverSummary).toBeNull()
     expect(store.getState().pressure.history).toEqual([{ tick: 0, pressure: 0 }])
     expect(store.getState().session.guidedOpeningComplete).toBe(false)
+    expect(store.getState().session.totalWordsCleared).toBe(0)
   })
 
   it('emits unique audio cue ids across repeated restarts', () => {
