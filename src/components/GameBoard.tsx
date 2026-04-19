@@ -21,7 +21,13 @@ export const GameBoard = () => {
   const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
   const tutorialCoach = useAppSelector(selectTutorialCoach)
   const projectedMatches = useAppSelector(selectProjectedMatches)
+  const recentMatches = useAppSelector((state) => state.session.recentMatches)
   const projectedTileIds = new Set(projectedMatches.flatMap((match) => match.tileIds))
+  const clearedCellKeys = new Set(
+    recentMatches.flatMap((match) =>
+      match.cells.map((cell) => positionKey(cell.x, cell.y)),
+    ),
+  )
 
   return (
     <section className="arcade-panel flex min-h-[760px] flex-col px-5 py-5">
@@ -113,6 +119,10 @@ export const GameBoard = () => {
                         : 'border-white/80 bg-white/12',
                     ].join(' ')}
                   />
+                ) : null}
+
+                {!tile && clearedCellKeys.has(positionKey(cell.x, cell.y)) ? (
+                  <div className="clear-burst pointer-events-none absolute inset-[8px] rounded-full bg-[radial-gradient(circle,_rgba(255,255,255,0.98)_0%,_rgba(250,204,21,0.95)_24%,_rgba(249,115,22,0.72)_48%,_transparent_72%)]" />
                 ) : null}
 
                 {tile ? (
