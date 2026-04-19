@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAppDispatch, useAppSelector } from './app/hooks'
 import { GameBoard } from './components/GameBoard'
 import { LeftPanel } from './components/LeftPanel'
@@ -16,9 +16,11 @@ import {
 import { useGameAudio } from './hooks/useGameAudio'
 import { useGameInput } from './hooks/useGameInput'
 import { useGameTick } from './hooks/useGameTick'
+import { useTouchControls } from './hooks/useTouchControls'
 
 function App() {
   const dispatch = useAppDispatch()
+  const boardRef = useRef<HTMLDivElement | null>(null)
   const activeTile = useAppSelector(selectActiveTile)
   const tickInterval = useAppSelector(selectTickInterval)
   const phase = useAppSelector((state) => state.session.phase)
@@ -37,6 +39,7 @@ function App() {
   useGameTick(tickInterval)
   useGameInput()
   useGameAudio()
+  useTouchControls(boardRef)
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.45),_transparent_40%),linear-gradient(180deg,_#5dc4ff_0%,_#4a8fff_35%,_#8c5bff_100%)] text-slate-950">
@@ -146,9 +149,15 @@ function App() {
         </div>
 
         <section className="grid flex-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
-          <LeftPanel />
-          <GameBoard />
-          <RightPanel />
+          <div className="order-2 xl:order-1">
+            <LeftPanel />
+          </div>
+          <div className="order-1 xl:order-2">
+            <GameBoard ref={boardRef} />
+          </div>
+          <div className="order-3 xl:order-3">
+            <RightPanel />
+          </div>
         </section>
       </div>
 
