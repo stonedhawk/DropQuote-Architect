@@ -86,3 +86,8 @@ export interface GameOverSummary {
   topCombo: number
   peakPressure: number
 }
+
+export interface AudioCueEvent {
+  id: string
+  cue: AudioCue
+}
