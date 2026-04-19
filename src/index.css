@@ -86,11 +86,46 @@ button {
   animation: tile-bounce 180ms ease-out;
 }
 
+.projected-clear-glow {
+  animation: projected-clear-pulse 850ms ease-in-out infinite;
+}
+
+.celebration-pop {
+  animation: celebration-pop 260ms ease-out;
+}
+
 @keyframes tile-bounce {
   0% {
     transform: translateY(-6px) scale(0.96);
   }
   100% {
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes projected-clear-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(74, 222, 128, 0.25),
+      0 0 24px rgba(74, 222, 128, 0.3);
+    filter: saturate(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 7px rgba(74, 222, 128, 0.08),
+      0 0 34px rgba(110, 231, 183, 0.52);
+    filter: saturate(1.08);
+  }
+}
+
+@keyframes celebration-pop {
+  0% {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
 }

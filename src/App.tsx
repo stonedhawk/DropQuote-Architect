@@ -23,6 +23,14 @@ function App() {
   const boardFill = useAppSelector(selectBoardFillPercent)
   const projectedMatches = useAppSelector(selectProjectedMatches)
   const tutorialCoach = useAppSelector(selectTutorialCoach)
+  const recentMatches = useAppSelector((state) => state.session.recentMatches)
+  const score = useAppSelector((state) => state.session.score)
+  const hasCelebration = recentMatches.length > 0
+  const celebrationLabel = recentMatches.some((match) => match.resolvedText === 'CAT')
+    ? 'Nice, you made CAT!'
+    : recentMatches.length > 0
+      ? `Nice, you made ${recentMatches.map((match) => match.resolvedText).join(' + ')}!`
+      : ''
 
   useEffect(() => {
     dispatch(restartGame())
@@ -80,6 +88,21 @@ function App() {
             </p>
             <p className="mt-2 text-sm font-semibold text-slate-800">
               {tutorialCoach.helper}
+            </p>
+          </div>
+        ) : null}
+
+        {hasCelebration ? (
+          <div className="mb-4 arcade-panel celebration-pop border-amber-200/90 bg-[linear-gradient(180deg,_rgba(255,251,235,0.98),_rgba(253,230,138,0.92))] px-5 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.34em] text-orange-700">
+              First Clear Energy
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <p className="text-2xl font-black text-slate-950">{celebrationLabel}</p>
+              <span className="arcade-pill bg-rose-400 text-white">+{score} total score</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-slate-800">
+              That is the core loop: lock the tile, pop the word, free space, and keep the pressure down.
             </p>
           </div>
         ) : null}
