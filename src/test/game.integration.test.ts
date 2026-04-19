@@ -138,4 +138,19 @@ describe('game loop integration', () => {
 
     expect(projectedMatches.map((match) => match.resolvedText)).toContain('CAT')
   })
+
+  it('celebrates the guided first word when CAT is completed', () => {
+    const store = createAppStore()
+
+    store.dispatch(restartGame())
+    store.dispatch(hardDropActiveTile()) // C
+    store.dispatch(moveActiveHorizontally(1))
+    store.dispatch(hardDropActiveTile()) // A
+    store.dispatch(moveActiveHorizontally(2))
+    store.dispatch(hardDropActiveTile()) // T
+
+    expect(store.getState().session.recentMatches.map((match) => match.resolvedText)).toContain('CAT')
+    expect(store.getState().session.score).toBeGreaterThan(0)
+    expect(selectTutorialCoach(store.getState()).active).toBe(false)
+  })
 })

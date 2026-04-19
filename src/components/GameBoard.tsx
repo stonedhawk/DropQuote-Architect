@@ -3,6 +3,7 @@ import { positionKey } from '../game/utils/board'
 import { useAppSelector } from '../app/hooks'
 import {
   selectGhostTilePosition,
+  selectProjectedMatches,
   selectTileGrid,
   selectTutorialCoach,
 } from '../features/game/selectors'
@@ -19,6 +20,8 @@ export const GameBoard = () => {
   const combo = useAppSelector((state) => state.session.combo)
   const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
   const tutorialCoach = useAppSelector(selectTutorialCoach)
+  const projectedMatches = useAppSelector(selectProjectedMatches)
+  const projectedTileIds = new Set(projectedMatches.flatMap((match) => match.tileIds))
 
   return (
     <section className="arcade-panel flex min-h-[760px] flex-col px-5 py-5">
@@ -69,6 +72,8 @@ export const GameBoard = () => {
             const isCurrentPad =
               tutorialCoach.currentTarget?.x === cell.x &&
               tutorialCoach.currentTarget?.y === cell.y
+            const isProjectedClear =
+              tile ? projectedTileIds.has(tile.id) : ghostTile?.x === cell.x && ghostTile?.y === cell.y && projectedMatches.length > 0
 
             return (
               <div
@@ -100,13 +105,21 @@ export const GameBoard = () => {
                 ) : null}
 
                 {showGhost ? (
-                  <div className="absolute inset-[6px] rounded-[10px] border-2 border-dashed border-white/80 bg-white/12 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]" />
+                  <div
+                    className={[
+                      'absolute inset-[6px] rounded-[10px] border-2 border-dashed shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]',
+                      projectedMatches.length > 0
+                        ? 'projected-clear-glow border-emerald-100 bg-emerald-200/18'
+                        : 'border-white/80 bg-white/12',
+                    ].join(' ')}
+                  />
                 ) : null}
 
                 {tile ? (
                   <div
                     className={[
                       'tile-pop absolute inset-[3px] flex items-center justify-center rounded-[12px] border-2 text-xl font-black shadow-[0_10px_22px_rgba(15,23,42,0.25)] sm:text-2xl',
+                      isProjectedClear ? 'projected-clear-glow ring-4 ring-emerald-200/80' : '',
                       tile.isWildcard
                         ? 'border-amber-100 bg-[linear-gradient(180deg,_#ffe082,_#ffb703)] text-slate-950'
                         : tile.isSteel
