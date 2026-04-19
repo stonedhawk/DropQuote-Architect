@@ -94,6 +94,22 @@ button {
   animation: celebration-pop 260ms ease-out;
 }
 
+.clear-burst {
+  animation: clear-burst 420ms ease-out forwards;
+}
+
+.clear-react {
+  animation: clear-react 360ms ease-out;
+}
+
+.danger-pulse {
+  animation: danger-pulse 900ms ease-in-out infinite;
+}
+
+.game-over-pop {
+  animation: game-over-pop 240ms ease-out;
+}
+
 @keyframes tile-bounce {
   0% {
     transform: translateY(-6px) scale(0.96);
@@ -127,5 +143,71 @@ button {
   100% {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes clear-burst {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes clear-react {
+  0% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+      0 0 0 rgba(16, 185, 129, 0);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.12),
+      0 0 0 10px rgba(74, 222, 128, 0.16);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+      0 0 0 0 rgba(74, 222, 128, 0);
+  }
+}
+
+@keyframes danger-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+      0 0 0 0 rgba(251, 113, 133, 0.08);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.12),
+      0 0 0 14px rgba(251, 113, 133, 0.18);
+  }
+}
+
+@keyframes game-over-pop {
+  0% {
+    transform: translateY(14px) scale(0.97);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile-pop,
+  .projected-clear-glow,
+  .celebration-pop,
+  .clear-burst,
+  .clear-react,
+  .danger-pulse,
+  .game-over-pop {
+    animation: none !important;
   }
 }

@@ -4,6 +4,7 @@ interface PressureChartProps {
   currentPressure: number
   maxPressure: number
   points: PressurePoint[]
+  celebrating?: boolean
 }
 
 const GraphifySequenceAdapter = ({
@@ -86,11 +87,21 @@ export const PressureChart = ({
   currentPressure,
   maxPressure,
   points,
+  celebrating = false,
 }: PressureChartProps) => {
   const sequence = points.map((point) => point.pressure)
 
   return (
-    <div className="rounded-[26px] border-4 border-white/80 bg-slate-950/80 p-4 text-white shadow-[inset_0_0_0_2px_rgba(255,255,255,0.08)]">
+    <div
+      className={[
+        'rounded-[26px] border-4 p-4 text-white shadow-[inset_0_0_0_2px_rgba(255,255,255,0.08)] transition',
+        currentPressure >= 80
+          ? 'danger-pulse border-rose-200/90 bg-slate-950/88'
+          : celebrating
+            ? 'clear-react border-emerald-200/90 bg-slate-950/84'
+            : 'border-white/80 bg-slate-950/80',
+      ].join(' ')}
+    >
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.32em] text-orange-300">
