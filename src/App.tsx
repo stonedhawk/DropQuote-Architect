@@ -148,14 +148,14 @@ function App() {
           ) : null}
         </div>
 
-        <section className="grid flex-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
-          <div className="order-2 xl:order-1">
+        <section className="grid flex-1 gap-4 sm:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[320px_minmax(0,1fr)_340px]">
+          <div className="order-2 sm:col-start-2 sm:row-start-1 xl:order-1 xl:col-start-1 xl:row-start-auto">
             <LeftPanel />
           </div>
-          <div className="order-1 xl:order-2">
+          <div className="order-1 sm:col-start-1 sm:row-span-2 xl:order-2 xl:col-start-2 xl:row-span-1">
             <GameBoard ref={boardRef} />
           </div>
-          <div className="order-3 xl:order-3">
+          <div className="order-3 sm:col-start-2 sm:row-start-2 xl:order-3 xl:col-start-3 xl:row-start-auto">
             <RightPanel />
           </div>
         </section>
