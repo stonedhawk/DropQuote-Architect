@@ -98,6 +98,19 @@ const resolveWildcardWord = (
   return null
 }
 
+const resolveBidirectionalWord = (
+  letters: string[],
+  isValidWord: (word: string) => boolean,
+) => {
+  const forward = resolveWildcardWord(letters, isValidWord)
+  if (forward) {
+    return forward
+  }
+
+  const reversed = resolveWildcardWord([...letters].reverse(), isValidWord)
+  return reversed
+}
+
 const buildMatchCandidates = (
   axis: Axis,
   runTiles: TileEntity[],
@@ -113,7 +126,7 @@ const buildMatchCandidates = (
       const rawLetters = sliceTiles.map((tile) =>
         tile.isWildcard ? WILDCARD_SYMBOL : tile.letter.toUpperCase(),
       )
-      const resolvedText = resolveWildcardWord(rawLetters, isValidWord)
+      const resolvedText = resolveBidirectionalWord(rawLetters, isValidWord)
 
       if (!resolvedText) {
         continue
