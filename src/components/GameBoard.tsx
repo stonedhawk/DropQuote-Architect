@@ -3,6 +3,7 @@ import { positionKey } from '../game/utils/board'
 import { useAppSelector } from '../app/hooks'
 import {
   selectGhostTilePosition,
+  selectNextTilePreview,
   selectProjectedMatches,
   selectTileGrid,
   selectTutorialCoach,
@@ -18,6 +19,8 @@ export const GameBoard = () => {
   const ghostTile = useAppSelector(selectGhostTilePosition)
   const score = useAppSelector((state) => state.session.score)
   const combo = useAppSelector((state) => state.session.combo)
+  const nextTile = useAppSelector(selectNextTilePreview)
+  const queuedPowerUp = useAppSelector((state) => state.economy.queuedPowerUp)
   const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
   const tutorialCoach = useAppSelector(selectTutorialCoach)
   const projectedMatches = useAppSelector(selectProjectedMatches)
@@ -49,6 +52,44 @@ export const GameBoard = () => {
         </div>
       </div>
 
+      <div className="mb-4 rounded-[24px] border-4 border-white/85 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(255,255,255,0.82))] px-4 py-4 shadow-[0_16px_35px_rgba(15,23,42,0.14)]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-20 w-20 items-center justify-center rounded-[20px] border-4 border-white bg-[linear-gradient(180deg,_#f9a8d4,_#ec4899)] px-5 py-4 text-4xl font-black text-white shadow-[0_12px_24px_rgba(236,72,153,0.28)]">
+              {nextTile?.letter ?? '?'}
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-xs font-black uppercase tracking-[0.32em] text-fuchsia-700">
+                Next Tile
+              </p>
+              <p className="text-lg font-black text-slate-950">
+                Keep this preview in view while you line up the landing shadow.
+              </p>
+              <p className="text-sm font-semibold text-slate-700">
+                {nextTile?.hint ?? 'Reverse words count in any straight line, so read the board both ways.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="arcade-pill bg-cyan-300 text-cyan-950">
+              Reverse words count
+            </span>
+            {queuedPowerUp ? (
+              <span className="arcade-pill bg-amber-300 text-amber-950">
+                Queued: {queuedPowerUp === 'steel' ? 'Steel' : 'Mortar'}
+              </span>
+            ) : null}
+            {nextTile?.targetWord ? (
+              <span className="arcade-pill bg-emerald-300 text-emerald-950">
+                Assist target: {nextTile.targetWord}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
       <div className="mb-4 flex flex-wrap items-center gap-3 text-sm font-bold">
         <span className="arcade-pill bg-white text-slate-900">
           Landing shadow shows where the tile will lock
@@ -58,6 +99,9 @@ export const GameBoard = () => {
             Tutorial queue: {tutorialQueue.slice(0, 3).join(' → ')}
           </span>
         ) : null}
+        <span className="arcade-pill bg-white text-slate-900">
+          Read rows and columns both directions
+        </span>
       </div>
 
       <div className="relative overflow-hidden rounded-[30px] border-[6px] border-white/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.7),_rgba(255,255,255,0.12)),linear-gradient(180deg,_#64d2ff_0%,_#2563eb_35%,_#7c3aed_100%)] p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.25),0_25px_60px_rgba(15,23,42,0.35)]">

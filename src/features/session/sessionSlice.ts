@@ -17,9 +17,11 @@ interface SessionState {
   score: number
   combo: number
   topCombo: number
+  totalWordsCleared: number
   activeTileId: string | null
   nextTile: TilePreview | null
   tutorialQueue: string[]
+  assistCursor: number
   guidedOpeningComplete: boolean
   celebration: CelebrationState | null
   objective: ObjectiveState | null
@@ -40,9 +42,11 @@ const initialState: SessionState = {
   score: 0,
   combo: 0,
   topCombo: 0,
+  totalWordsCleared: 0,
   activeTileId: null,
   nextTile: null,
   tutorialQueue: [...STARTER_TUTORIAL_QUEUE],
+  assistCursor: 0,
   guidedOpeningComplete: false,
   celebration: null,
   objective: null,
@@ -74,6 +78,9 @@ const sessionSlice = createSlice({
     nextTilePrepared: (state, action: PayloadAction<TilePreview>) => {
       state.nextTile = action.payload
     },
+    assistCursorAdvanced: (state) => {
+      state.assistCursor += 1
+    },
     tutorialQueueAdvanced: (state) => {
       state.tutorialQueue.shift()
     },
@@ -87,6 +94,9 @@ const sessionSlice = createSlice({
     },
     comboSet: (state, action: PayloadAction<number>) => {
       state.combo = action.payload
+    },
+    wordsClearedAdded: (state, action: PayloadAction<number>) => {
+      state.totalWordsCleared += action.payload
     },
     guidedOpeningCompleted: (state) => {
       state.guidedOpeningComplete = true

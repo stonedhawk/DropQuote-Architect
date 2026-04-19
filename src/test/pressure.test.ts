@@ -14,22 +14,19 @@ const createLockedTile = (x: number, y: number): TileEntity => ({
 
 describe('pressure utilities', () => {
   it('excludes fortified rows from pressure calculations', () => {
-    const tiles = [
-      createLockedTile(0, 19),
-      createLockedTile(1, 19),
-      createLockedTile(2, 18),
-      createLockedTile(3, 18),
-    ]
+    const tiles = Array.from({ length: 20 }, (_, index) =>
+      createLockedTile(index % 10, 18 + Math.floor(index / 10)),
+    )
 
-    expect(calculateRawPressure(tiles, [19])).toBe(1)
-    expect(calculateRawPressure(tiles, [])).toBe(2)
+    expect(calculateRawPressure(tiles, [19])).toBe(2)
+    expect(calculateRawPressure(tiles, [])).toBe(4)
   })
 
   it('speeds up tick intervals as pressure increases', () => {
-    expect(getTickIntervalFromPressure(10)).toBe(1100)
-    expect(getTickIntervalFromPressure(35)).toBe(820)
-    expect(getTickIntervalFromPressure(55)).toBe(600)
-    expect(getTickIntervalFromPressure(75)).toBe(450)
-    expect(getTickIntervalFromPressure(95)).toBe(340)
+    expect(getTickIntervalFromPressure(10)).toBe(1450)
+    expect(getTickIntervalFromPressure(35)).toBe(1100)
+    expect(getTickIntervalFromPressure(55)).toBe(860)
+    expect(getTickIntervalFromPressure(75)).toBe(680)
+    expect(getTickIntervalFromPressure(95)).toBe(520)
   })
 })

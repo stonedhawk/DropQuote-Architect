@@ -32,6 +32,11 @@ export const LeftPanel = () => {
             <p className="text-sm font-bold text-slate-800">
               Queue a power-up to transform the next drop.
             </p>
+            {nextTile?.hint ? (
+              <p className="text-sm font-semibold text-slate-700">
+                {nextTile.hint}
+              </p>
+            ) : null}
             {tutorialQueue.length > 0 ? (
               <div className="rounded-[18px] border-4 border-white bg-emerald-100 px-3 py-3 text-sm font-bold text-emerald-950">
                 Starter assist active. The opening letters are seeded to help you
