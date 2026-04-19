@@ -44,6 +44,9 @@ export interface WordMatch {
 
 export interface TilePreview {
   letter: string
+  assistMode?: 'tutorial' | 'completion' | 'sequence' | 'fallback'
+  targetWord?: string
+  hint?: string
 }
 
 export interface PressurePoint {

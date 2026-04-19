@@ -9,8 +9,10 @@ export const MAX_INVENTORY_SLOTS = 3
 export const STARTER_TUTORIAL_QUEUE = ['C', 'A', 'T', 'S', 'U', 'N', 'C', 'O', 'D', 'E']
 export const PRESSURE_OBJECTIVE_THRESHOLD = 45
 export const PRESSURE_OBJECTIVE_TICKS = 6
+export const MIN_WORDS_BEFORE_OBJECTIVES = 3
 
 export const LETTER_BAG = [
+  'A',
   'A',
   'A',
   'A',
@@ -28,22 +30,25 @@ export const LETTER_BAG = [
   'U',
   'U',
   'L',
+  'L',
+  'N',
   'N',
   'N',
   'R',
   'R',
   'S',
   'S',
+  'S',
+  'T',
   'T',
   'T',
   'C',
+  'C',
+  'D',
   'D',
   'G',
+  'G',
   'M',
-  'B',
-  'F',
-  'H',
-  'P',
 ]
 
 export const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')

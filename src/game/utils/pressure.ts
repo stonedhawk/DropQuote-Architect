@@ -10,24 +10,28 @@ export const calculateRawPressure = (
     (tile) => !tile.isMoving && !fortified.has(tile.y),
   )
 
-  const ratio = contributingTiles.length / (BOARD_WIDTH * BOARD_HEIGHT)
+  const effectiveTiles = Math.max(0, contributingTiles.length - 2)
+  const ratio = effectiveTiles / (BOARD_WIDTH * BOARD_HEIGHT)
   return Math.min(MAX_PRESSURE, Math.round(ratio * 100))
 }
 
 export const getTickIntervalFromPressure = (pressure: number) => {
-  if (pressure >= 85) {
-    return 340
+  if (pressure >= 90) {
+    return 480
   }
-  if (pressure >= 65) {
-    return 450
+  if (pressure >= 70) {
+    return 620
   }
-  if (pressure >= 45) {
-    return 600
+  if (pressure >= 50) {
+    return 780
   }
-  if (pressure >= 25) {
-    return 820
+  if (pressure >= 30) {
+    return 980
   }
-  return 1100
+  if (pressure >= 15) {
+    return 1150
+  }
+  return 1350
 }
 
 export const getBoardFillPercent = (tiles: TileEntity[]) =>

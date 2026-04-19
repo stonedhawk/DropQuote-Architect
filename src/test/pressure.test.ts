@@ -21,15 +21,16 @@ describe('pressure utilities', () => {
       createLockedTile(3, 18),
     ]
 
-    expect(calculateRawPressure(tiles, [19])).toBe(1)
-    expect(calculateRawPressure(tiles, [])).toBe(2)
+    expect(calculateRawPressure(tiles, [19])).toBe(0)
+    expect(calculateRawPressure(tiles, [])).toBe(1)
   })
 
   it('speeds up tick intervals as pressure increases', () => {
-    expect(getTickIntervalFromPressure(10)).toBe(1100)
-    expect(getTickIntervalFromPressure(35)).toBe(820)
-    expect(getTickIntervalFromPressure(55)).toBe(600)
-    expect(getTickIntervalFromPressure(75)).toBe(450)
-    expect(getTickIntervalFromPressure(95)).toBe(340)
+    expect(getTickIntervalFromPressure(10)).toBe(1350)
+    expect(getTickIntervalFromPressure(20)).toBe(1150)
+    expect(getTickIntervalFromPressure(35)).toBe(980)
+    expect(getTickIntervalFromPressure(55)).toBe(780)
+    expect(getTickIntervalFromPressure(75)).toBe(620)
+    expect(getTickIntervalFromPressure(95)).toBe(480)
   })
 })
