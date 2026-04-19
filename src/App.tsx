@@ -41,15 +41,15 @@ function App() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.45),_transparent_40%),linear-gradient(180deg,_#5dc4ff_0%,_#4a8fff_35%,_#8c5bff_100%)] text-slate-950">
       <div className="mx-auto flex min-h-screen max-w-[1500px] flex-col px-4 py-4 sm:px-6 lg:px-8">
-        <header className="arcade-panel mb-4 flex flex-col gap-4 overflow-hidden px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+        <header className="arcade-panel mb-3 flex flex-col gap-3 overflow-hidden px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-3xl">
             <p className="text-sm font-black uppercase tracking-[0.35em] text-fuchsia-700">
               DropQuote Architect
             </p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               Stack bright words, beat the pressure, keep the tower bouncing.
             </h1>
-            <p className="mt-3 max-w-2xl text-sm font-semibold text-slate-800 sm:text-base">
+            <p className="mt-2 max-w-2xl text-sm font-semibold text-slate-800">
               Move with the arrow keys, tap down to soften the drop, smash space
               to slam pieces home, and spend Ink on wild arcade powers.
             </p>
@@ -73,16 +73,16 @@ function App() {
           </div>
         </header>
 
-        <div className="mb-4 rounded-[28px] border-4 border-white/80 bg-white/20 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_50px_rgba(17,24,39,0.28)] backdrop-blur-md">
+        <div className="mb-3 rounded-[24px] border-4 border-white/80 bg-white/20 px-4 py-3 text-sm font-bold text-white shadow-[0_18px_50px_rgba(17,24,39,0.28)] backdrop-blur-md">
           {statusMessage}
         </div>
 
         {tutorialCoach.active ? (
-          <div className="mb-4 arcade-panel border-emerald-200/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(209,250,229,0.92))] px-5 py-4">
+          <div className="mb-3 arcade-panel border-emerald-200/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(209,250,229,0.92))] px-4 py-3">
             <p className="text-xs font-black uppercase tracking-[0.34em] text-emerald-700">
               Guided Opening
             </p>
-            <p className="mt-2 text-xl font-black text-slate-950">
+            <p className="mt-1 text-lg font-black text-slate-950 sm:text-xl">
               {tutorialCoach.message}
             </p>
             <p className="mt-2 text-sm font-semibold text-slate-800">
@@ -94,7 +94,7 @@ function App() {
         {celebration ? (
           <div
             className={[
-              'mb-4 arcade-panel celebration-pop px-5 py-4',
+              'mb-3 arcade-panel celebration-pop px-4 py-3',
               celebration.tone === 'warning'
                 ? 'border-rose-200/90 bg-[linear-gradient(180deg,_rgba(255,241,242,0.98),_rgba(254,205,211,0.92))]'
                 : celebration.tone === 'objective'
@@ -133,7 +133,7 @@ function App() {
             Words clear after the tile locks
           </span>
           <span className="arcade-pill bg-cyan-300 text-cyan-950">
-            Horizontal or vertical only
+            Horizontal or vertical, both directions count
           </span>
           <span className="arcade-pill bg-amber-300 text-amber-950">
             Need 3+ letters to score

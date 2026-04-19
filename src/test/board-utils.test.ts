@@ -40,6 +40,19 @@ describe('board utilities', () => {
     expect(matches[0]?.axis).toBe('horizontal')
   })
 
+  it('finds horizontal words when they read in reverse on the board', () => {
+    const tiles = [
+      createTile({ id: 't', letter: 'T', x: 0, y: 19 }),
+      createTile({ id: 'a', letter: 'A', x: 1, y: 19 }),
+      createTile({ id: 'c', letter: 'C', x: 2, y: 19 }),
+    ]
+
+    const matches = scanWordsAtPositions(tiles, [{ x: 1, y: 19 }], (word) => word === 'CAT')
+
+    expect(matches).toHaveLength(1)
+    expect(matches[0]?.resolvedText).toBe('CAT')
+  })
+
   it('finds valid words inside a longer contiguous run', () => {
     const tiles = [
       createTile({ id: 'c', letter: 'C', x: 0, y: 19 }),
@@ -70,6 +83,20 @@ describe('board utilities', () => {
 
     expect(matches).toHaveLength(1)
     expect(matches[0]?.resolvedText).toBe('CAB')
+    expect(matches[0]?.usedWildcard).toBe(true)
+  })
+
+  it('resolves wildcard tiles for reverse vertical words too', () => {
+    const tiles = [
+      createTile({ id: 't', letter: 'T', x: 5, y: 10 }),
+      createTile({ id: 'wild', letter: '?', x: 5, y: 11, isWildcard: true }),
+      createTile({ id: 'c', letter: 'C', x: 5, y: 12 }),
+    ]
+
+    const matches = scanWordsAtPositions(tiles, [{ x: 5, y: 11 }], (word) => word === 'CAT')
+
+    expect(matches).toHaveLength(1)
+    expect(matches[0]?.resolvedText).toBe('CAT')
     expect(matches[0]?.usedWildcard).toBe(true)
   })
 

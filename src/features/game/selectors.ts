@@ -137,6 +137,7 @@ export const selectProjectedClearCells = createSelector(
     ),
 )
 
+export const selectNextTilePreview = (state: RootState) => state.session.nextTile
 export const selectCelebration = (state: RootState) => state.session.celebration
 export const selectCurrentObjective = (state: RootState) => state.session.objective
 export const selectGameOverSummary = (state: RootState) => state.session.gameOverSummary

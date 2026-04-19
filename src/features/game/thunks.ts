@@ -1,6 +1,8 @@
 import type { AppDispatch, RootState } from '../../app/store'
 import {
+  FUN_FIRST_SEQUENCE,
   LETTER_BAG,
+  MIN_WORDS_BEFORE_OBJECTIVES,
   POWER_UP_COSTS,
   POWER_UP_LABELS,
   PRESSURE_OBJECTIVE_THRESHOLD,
@@ -22,6 +24,7 @@ import {
   scanWordsAtPositions,
 } from '../../game/utils/board'
 import { isValidWord } from '../../game/utils/dictionaryService'
+import { createFunFirstPreview } from '../../game/utils/assist'
 import { createObjectiveState, getNextObjectiveId, rewardCanBeGranted } from '../../game/utils/objectives'
 import { calculateRawPressure } from '../../game/utils/pressure'
 import {
@@ -53,19 +56,26 @@ const getUpcomingPreview = (state: RootState): { preview: TilePreview; fromTutor
 
   if (nextTutorialLetter) {
     return {
-      preview: { letter: nextTutorialLetter },
+      preview: {
+        letter: nextTutorialLetter,
+        assistMode: 'tutorial',
+        targetWord: FUN_FIRST_SEQUENCE.slice(0, 3).join('') || 'CAT',
+        hint: 'Starter assist active. The opening letters are seeded to help you learn the board.',
+      },
       fromTutorial: true,
     }
   }
 
   return {
-    preview: createRandomTilePreview(),
+    preview: createFunFirstPreview(selectLockedTiles(state), state.session.assistCursor),
     fromTutorial: false,
   }
 }
 
 const createRandomTilePreview = (): TilePreview => ({
   letter: LETTER_BAG[Math.floor(Math.random() * LETTER_BAG.length)] ?? 'A',
+  assistMode: 'fallback',
+  hint: 'Fallback bag active. Reverse words still count in any straight line.',
 })
 
 const createSpawnTile = (preview: TilePreview, queuedPowerUp: QueuedPowerUp): TileEntity => ({
@@ -169,6 +179,10 @@ const maybeStartObjectiveLoop = (dispatch: AppDispatch, getState: () => RootStat
   const state = getState()
 
   if (!state.session.guidedOpeningComplete || state.session.objective) {
+    return false
+  }
+
+  if (state.session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES) {
     return false
   }
 
@@ -393,6 +407,8 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
   dispatch(sessionActions.nextTilePrepared(upcoming.preview))
   if (upcoming.fromTutorial) {
     dispatch(sessionActions.tutorialQueueAdvanced())
+  } else {
+    dispatch(sessionActions.assistCursorAdvanced())
   }
 
   let guidedOpeningCompleted = false
@@ -409,7 +425,7 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
         ? 'Starter queue active. Follow the glowing pads and build your first easy clears.'
         : getState().session.objective
           ? `${getState().session.objective?.title}: ${getState().session.objective?.description}`
-          : 'Drop in and keep the combo alive.',
+          : `Fun-first assist is live. Reverse words count, and objectives wake up after ${MIN_WORDS_BEFORE_OBJECTIVES} clears.`,
     ),
   )
 
@@ -479,7 +495,7 @@ const resolveBoardAfterLock = (
         resetRunScopedObjectiveProgress(dispatch, getState)
         dispatch(
           sessionActions.statusMessageSet(
-            'No clear this drop. Words must be 3+ connected letters in a straight row or column after the tile locks.',
+            'No clear this drop. Words must be 3+ connected letters in a straight row or column after the tile locks, and reverse reads count too.',
           ),
         )
       }
@@ -512,6 +528,7 @@ const resolveBoardAfterLock = (
         combo: cascadeDepth,
       }),
     )
+    dispatch(sessionActions.wordsClearedAdded(matches.length))
     dispatch(economyActions.inkAwarded(totalInk))
     dispatch(sessionActions.audioCueEmitted('word-clear'))
     if (cascadeDepth > 1) {
@@ -573,6 +590,8 @@ const resolveBoardAfterLock = (
         sessionActions.statusMessageSet(
           startedObjective
             ? 'First clear locked in. Objectives are now live on the HUD.'
+            : getState().session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES
+              ? `Cleared ${resolvedWords.join(' + ')}. Reverse words count, and objectives unlock after ${MIN_WORDS_BEFORE_OBJECTIVES} total clears.`
             : maxCascade > 1
               ? `Cascade x${maxCascade}! Cleared ${resolvedWords.join(' + ')}.`
               : `Cleared ${resolvedWords.join(' + ')}.`,
@@ -634,6 +653,8 @@ export const initializeGame = (): AppThunk => (dispatch, getState) => {
     dispatch(sessionActions.nextTilePrepared(upcoming.preview))
     if (upcoming.fromTutorial) {
       dispatch(sessionActions.tutorialQueueAdvanced())
+    } else {
+      dispatch(sessionActions.assistCursorAdvanced())
     }
   }
 
