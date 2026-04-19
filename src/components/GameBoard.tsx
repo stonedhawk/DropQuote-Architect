@@ -1,6 +1,7 @@
+import { forwardRef, type CSSProperties } from 'react'
+import { useAppSelector } from '../app/hooks'
 import { BOARD_HEIGHT, BOARD_WIDTH } from '../game/constants'
 import { positionKey } from '../game/utils/board'
-import { useAppSelector } from '../app/hooks'
 import {
   selectGhostTilePosition,
   selectProjectedMatches,
@@ -13,7 +14,11 @@ const boardCells = Array.from({ length: BOARD_WIDTH * BOARD_HEIGHT }, (_, index)
   y: Math.floor(index / BOARD_WIDTH),
 }))
 
-export const GameBoard = () => {
+const boardSizing = {
+  '--board-cell-size': 'min(calc(90vw / 10), 44px)',
+} as CSSProperties
+
+export const GameBoard = forwardRef<HTMLDivElement>((_, ref) => {
   const tileGrid = useAppSelector(selectTileGrid)
   const ghostTile = useAppSelector(selectGhostTilePosition)
   const score = useAppSelector((state) => state.session.score)
@@ -30,7 +35,7 @@ export const GameBoard = () => {
   )
 
   return (
-    <section className="arcade-panel flex min-h-[760px] flex-col px-5 py-5">
+    <section className="arcade-panel flex flex-col px-4 py-5 sm:px-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
@@ -60,10 +65,20 @@ export const GameBoard = () => {
         ) : null}
       </div>
 
-      <div className="relative overflow-hidden rounded-[30px] border-[6px] border-white/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.7),_rgba(255,255,255,0.12)),linear-gradient(180deg,_#64d2ff_0%,_#2563eb_35%,_#7c3aed_100%)] p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.25),0_25px_60px_rgba(15,23,42,0.35)]">
+      <div className="relative mx-auto overflow-hidden rounded-[30px] border-[6px] border-white/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.7),_rgba(255,255,255,0.12)),linear-gradient(180deg,_#64d2ff_0%,_#2563eb_35%,_#7c3aed_100%)] p-3 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.25),0_25px_60px_rgba(15,23,42,0.35)] sm:p-4">
         <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_transparent_70%)]" />
 
-        <div className="relative grid aspect-[10/20] w-full grid-cols-10 gap-1 rounded-[22px] bg-slate-900/25 p-1.5">
+        <div
+          ref={ref}
+          className="relative mx-auto grid touch-none select-none rounded-[22px] bg-slate-900/25 p-1.5"
+          style={{
+            ...boardSizing,
+            gridTemplateColumns: 'repeat(10, var(--board-cell-size))',
+            gridTemplateRows: 'repeat(20, var(--board-cell-size))',
+            width: 'calc(var(--board-cell-size) * 10 + 0.75rem)',
+            height: 'calc(var(--board-cell-size) * 20 + 0.75rem)',
+          }}
+        >
           {boardCells.map((cell) => {
             const tile = tileGrid.get(positionKey(cell.x, cell.y))
             const tileLabel = tile?.isWildcard ? '*' : tile?.letter
@@ -78,14 +93,17 @@ export const GameBoard = () => {
             const isCurrentPad =
               tutorialCoach.currentTarget?.x === cell.x &&
               tutorialCoach.currentTarget?.y === cell.y
-            const isProjectedClear =
-              tile ? projectedTileIds.has(tile.id) : ghostTile?.x === cell.x && ghostTile?.y === cell.y && projectedMatches.length > 0
+            const isProjectedClear = tile
+              ? projectedTileIds.has(tile.id)
+              : ghostTile?.x === cell.x &&
+                ghostTile?.y === cell.y &&
+                projectedMatches.length > 0
 
             return (
               <div
                 key={`${cell.x}-${cell.y}`}
                 className={[
-                  'relative aspect-square overflow-hidden rounded-[16px] border-2 bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)]',
+                  'relative h-[var(--board-cell-size)] w-[var(--board-cell-size)] overflow-hidden rounded-[16px] border-2 bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)]',
                   tutorialPad
                     ? isCurrentPad
                       ? 'border-emerald-200 bg-emerald-200/18 shadow-[inset_0_0_0_2px_rgba(255,255,255,0.25),0_0_0_2px_rgba(16,185,129,0.4)]'
@@ -151,4 +169,6 @@ export const GameBoard = () => {
       </div>
     </section>
   )
-}
+})
+
+GameBoard.displayName = 'GameBoard'
