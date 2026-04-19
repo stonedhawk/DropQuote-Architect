@@ -84,7 +84,7 @@ export const useGameAudio = () => {
   const dispatch = useAppDispatch()
   const { unlocked, muted, cue } = useAppSelector(selectAudioState)
   const contextRef = useRef<AudioContext | null>(null)
-  const lastCueIdRef = useRef<number | null>(null)
+  const lastCueIdRef = useRef<string | null>(null)
 
   const unlockOnInteraction = useEffectEvent(async () => {
     if (!contextRef.current) {

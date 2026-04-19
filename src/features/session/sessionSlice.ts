@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { STARTER_TUTORIAL_QUEUE } from '../../game/constants'
 import type {
   AudioCue,
+  AudioCueEvent,
   CelebrationState,
   GameOverSummary,
   GamePhase,
@@ -28,8 +29,7 @@ interface SessionState {
   peakPressure: number
   audioUnlocked: boolean
   audioMuted: boolean
-  lastAudioCue: { id: number; cue: AudioCue } | null
-  audioCueCount: number
+  lastAudioCue: AudioCueEvent | null
   recentMatches: WordMatch[]
   statusMessage: string
 }
@@ -53,7 +53,6 @@ const initialState: SessionState = {
   audioUnlocked: false,
   audioMuted: false,
   lastAudioCue: null,
-  audioCueCount: 0,
   recentMatches: [],
   statusMessage: 'Press restart to begin the drop.',
 }
@@ -137,12 +136,16 @@ const sessionSlice = createSlice({
     audioMutedSet: (state, action: PayloadAction<boolean>) => {
       state.audioMuted = action.payload
     },
-    audioCueEmitted: (state, action: PayloadAction<AudioCue>) => {
-      state.audioCueCount += 1
-      state.lastAudioCue = {
-        id: state.audioCueCount,
-        cue: action.payload,
-      }
+    audioCueEmitted: {
+      reducer: (state, action: PayloadAction<AudioCueEvent>) => {
+        state.lastAudioCue = action.payload
+      },
+      prepare: (cue: AudioCue) => ({
+        payload: {
+          id: crypto.randomUUID(),
+          cue,
+        },
+      }),
     },
   },
 })
