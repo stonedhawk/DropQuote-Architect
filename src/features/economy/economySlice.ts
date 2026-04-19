@@ -30,6 +30,11 @@ const economySlice = createSlice({
         state.inventory.push(action.payload)
       }
     },
+    powerUpGranted: (state, action: PayloadAction<PowerUpType>) => {
+      if (state.inventory.length < MAX_INVENTORY_SLOTS) {
+        state.inventory.push(action.payload)
+      }
+    },
     inventorySlotRemoved: (state, action: PayloadAction<number>) => {
       state.inventory.splice(action.payload, 1)
     },

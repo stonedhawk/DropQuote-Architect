@@ -1,14 +1,23 @@
-import { useAppSelector } from '../app/hooks'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
+import { POWER_UP_LABELS } from '../game/constants'
 import { acceptedExampleWords } from '../game/utils/dictionaryService'
+import { selectAudioState, selectCurrentObjective } from '../features/game/selectors'
+import { setAudioMuted } from '../features/game/thunks'
 import { PressureChart } from './PressureChart'
 
 export const RightPanel = () => {
+  const dispatch = useAppDispatch()
   const pressure = useAppSelector((state) => state.pressure.current)
   const maxPressure = useAppSelector((state) => state.pressure.max)
   const history = useAppSelector((state) => state.pressure.history)
   const recentMatches = useAppSelector((state) => state.session.recentMatches)
   const fortifiedRows = useAppSelector((state) => state.pressure.fortifiedRows)
   const tick = useAppSelector((state) => state.session.tick)
+  const objective = useAppSelector(selectCurrentObjective)
+  const audioState = useAppSelector(selectAudioState)
+  const objectiveProgressPercent = objective
+    ? Math.round((objective.progress / objective.target) * 100)
+    : 0
 
   return (
     <aside className="flex flex-col gap-4">
@@ -63,6 +72,7 @@ export const RightPanel = () => {
           currentPressure={pressure}
           maxPressure={maxPressure}
           points={history}
+          celebrating={recentMatches.length > 0}
         />
 
         <div className="mt-4 grid grid-cols-2 gap-3">
@@ -81,6 +91,65 @@ export const RightPanel = () => {
             </p>
           </div>
         </div>
+      </section>
+
+      <section className="arcade-panel px-5 py-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
+              Live Objective
+            </p>
+            <h3 className="text-2xl font-black text-slate-950">
+              {objective?.title ?? 'Unlock with first clear'}
+            </h3>
+          </div>
+          <button
+            type="button"
+            className={[
+              'arcade-button min-h-11 px-4 py-3 text-white',
+              audioState.muted
+                ? 'bg-slate-700 shadow-[0_8px_0_#334155]'
+                : 'bg-cyan-500 shadow-[0_8px_0_#0f766e]',
+            ].join(' ')}
+            onClick={() => dispatch(setAudioMuted(!audioState.muted))}
+          >
+            {audioState.muted ? 'Sound Off' : 'Sound On'}
+          </button>
+        </div>
+
+        {objective ? (
+          <div className="mt-4 space-y-3">
+            <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
+              <p className="text-sm font-semibold text-slate-800">
+                {objective.description}
+              </p>
+              <div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,_#22d3ee,_#3b82f6,_#8b5cf6)] transition-[width] duration-300"
+                  style={{ width: `${objectiveProgressPercent}%` }}
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 text-sm font-black text-slate-900">
+                <span>
+                  {objective.progress} / {objective.target}
+                </span>
+                <span>
+                  Reward: +{objective.reward.ink} Ink
+                  {objective.reward.bonusPowerUp
+                    ? ` • ${POWER_UP_LABELS[objective.reward.bonusPowerUp]}`
+                    : ''}
+                </span>
+              </div>
+            </div>
+            <div className="rounded-[20px] border-4 border-dashed border-white/70 bg-white/60 px-4 py-4 text-sm font-semibold text-slate-700">
+              Audio unlocks on your first tap or keypress. Use the toggle anytime if you want a quieter run.
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-[20px] border-4 border-dashed border-white/70 bg-white/60 px-4 py-4 text-sm font-semibold text-slate-700">
+            Clear your first guided word to start the rotating objective loop.
+          </div>
+        )}
       </section>
 
       <section className="arcade-panel px-5 py-5">
