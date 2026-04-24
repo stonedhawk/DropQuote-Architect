@@ -1,7 +1,9 @@
 import { BOARD_HEIGHT, BOARD_WIDTH } from '../game/constants'
+import { POWER_UP_LABELS } from '../game/constants'
 import { positionKey } from '../game/utils/board'
 import { useAppSelector } from '../app/hooks'
 import {
+  selectDifficultyStage,
   selectGhostTilePosition,
   selectProjectedMatches,
   selectTileGrid,
@@ -21,6 +23,9 @@ export const GameBoard = () => {
   const tutorialQueue = useAppSelector((state) => state.session.tutorialQueue)
   const tutorialCoach = useAppSelector(selectTutorialCoach)
   const projectedMatches = useAppSelector(selectProjectedMatches)
+  const difficultyStage = useAppSelector(selectDifficultyStage)
+  const nextTile = useAppSelector((state) => state.session.nextTile)
+  const queuedPowerUp = useAppSelector((state) => state.economy.queuedPowerUp)
   const recentMatches = useAppSelector((state) => state.session.recentMatches)
   const projectedTileIds = new Set(projectedMatches.flatMap((match) => match.tileIds))
   const clearedCellKeys = new Set(
@@ -28,18 +33,30 @@ export const GameBoard = () => {
       match.cells.map((cell) => positionKey(cell.x, cell.y)),
     ),
   )
+  const boardWidth = `min(100%, calc((100vh - 22rem) * ${BOARD_WIDTH / BOARD_HEIGHT}))`
 
   return (
-    <section className="arcade-panel flex min-h-[760px] flex-col px-5 py-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="arcade-panel flex min-h-0 flex-col px-4 py-4 sm:px-5 sm:py-5">
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
             Main Stage
           </p>
-          <h2 className="text-3xl font-black text-slate-950">Word Tower</h2>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h2 className="text-3xl font-black text-slate-950">Word Tower</h2>
+            <span className="arcade-pill bg-cyan-300 text-cyan-950">
+              {difficultyStage.label}
+            </span>
+          </div>
+          <p className="mt-2 max-w-2xl text-sm font-semibold text-slate-700">
+            {difficultyStage.helper}
+            {difficultyStage.nextMilestone
+              ? ` Next ramp at ${difficultyStage.nextMilestone} clears.`
+              : ' You are in the final difficulty ramp.'}
+          </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="arcade-pill bg-fuchsia-300 text-fuchsia-950">
             Score {score}
           </span>
@@ -49,21 +66,66 @@ export const GameBoard = () => {
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm font-bold">
-        <span className="arcade-pill bg-white text-slate-900">
-          Landing shadow shows where the tile will lock
-        </span>
-        {tutorialQueue.length > 0 ? (
-          <span className="arcade-pill bg-emerald-300 text-emerald-950">
-            Tutorial queue: {tutorialQueue.slice(0, 3).join(' → ')}
+      <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="flex flex-wrap items-center gap-3 text-sm font-bold">
+          <span className="arcade-pill bg-white text-slate-900">
+            Landing shadow shows where the tile will lock
           </span>
-        ) : null}
+          {tutorialQueue.length > 0 ? (
+            <span className="arcade-pill bg-emerald-300 text-emerald-950">
+              Tutorial queue: {tutorialQueue.slice(0, 3).join(' → ')}
+            </span>
+          ) : null}
+          {projectedMatches.length > 0 ? (
+            <span className="arcade-pill bg-emerald-300 text-emerald-950">
+              Drop now: {projectedMatches.map((match) => match.resolvedText).join(', ')}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="rounded-[22px] border-4 border-white bg-white/85 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.12)]">
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-fuchsia-700">
+            Next Tile
+          </p>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[18px] border-4 border-white bg-[linear-gradient(180deg,_#f9a8d4,_#ec4899)] text-3xl font-black text-white shadow-[0_10px_20px_rgba(236,72,153,0.25)]">
+              {nextTile?.letter ?? '?'}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black text-slate-950">
+                {nextTile?.targetWord
+                  ? `Target: ${nextTile.targetWord}`
+                  : 'Free play'}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-700">
+                {queuedPowerUp
+                  ? `Queued: ${POWER_UP_LABELS[queuedPowerUp]}`
+                  : nextTile?.hint ?? 'No modifier queued'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-3 flex flex-wrap items-center gap-3 text-sm font-bold">
+        <span className="arcade-pill bg-white text-slate-900">
+          Reverse words count too
+        </span>
+        <span className="arcade-pill bg-amber-300 text-amber-950">
+          3+ letters to score
+        </span>
+        <span className="arcade-pill bg-cyan-300 text-cyan-950">
+          Band: {difficultyStage.label}
+        </span>
       </div>
 
       <div className="relative overflow-hidden rounded-[30px] border-[6px] border-white/90 bg-[linear-gradient(180deg,_rgba(255,255,255,0.7),_rgba(255,255,255,0.12)),linear-gradient(180deg,_#64d2ff_0%,_#2563eb_35%,_#7c3aed_100%)] p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.25),0_25px_60px_rgba(15,23,42,0.35)]">
         <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_transparent_70%)]" />
 
-        <div className="relative grid aspect-[10/20] w-full grid-cols-10 gap-1 rounded-[22px] bg-slate-900/25 p-1.5">
+        <div
+          className="relative mx-auto grid aspect-[10/20] grid-cols-10 gap-1 rounded-[22px] bg-slate-900/25 p-1.5"
+          style={{ width: boardWidth, maxWidth: '100%' }}
+        >
           {boardCells.map((cell) => {
             const tile = tileGrid.get(positionKey(cell.x, cell.y))
             const tileLabel = tile?.isWildcard ? '*' : tile?.letter
