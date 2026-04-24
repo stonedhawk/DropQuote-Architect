@@ -3,11 +3,13 @@ import { acceptedExampleWords, isValidWord } from '../game/utils/dictionaryServi
 
 describe('dictionary service', () => {
   it('accepts obvious common words that were previously missing', () => {
+    expect(isValidWord('APPLE')).toBe(true)
     expect(isValidWord('COD')).toBe(true)
     expect(isValidWord('DOG')).toBe(true)
     expect(isValidWord('GUN')).toBe(true)
     expect(isValidWord('GUNS')).toBe(true)
     expect(isValidWord('SOS')).toBe(true)
+    expect(isValidWord('TOWER')).toBe(true)
     expect(isValidWord('WORD')).toBe(true)
   })
 
