@@ -1,6 +1,6 @@
 import { BOARD_HEIGHT, BOARD_WIDTH, LETTER_BAG } from '../constants'
-import type { Axis, TileEntity, TilePreview } from '../types'
-import { coreAssistWords } from './dictionaryService'
+import type { Axis, DifficultyBand, TileEntity, TilePreview } from '../types'
+import { coreAssistWords, isValidWord } from './dictionaryService'
 import { buildOccupancyMap, positionKey } from './board'
 
 interface AssistOpportunity {
@@ -24,8 +24,34 @@ const axisSteps: Record<
   },
 }
 
-const FUN_FIRST_SEQUENCE = coreAssistWords.join('').split('')
-const MIN_COMPLETION_RUN_LENGTH = 2
+const buildNaturalVariants = (word: string) => {
+  if (/(S|X|Z|CH|SH)$/.test(word)) {
+    return [`${word}ES`]
+  }
+
+  if (/[^AEIOU]Y$/.test(word)) {
+    return [`${word.slice(0, -1)}IES`]
+  }
+
+  return [`${word}S`]
+}
+
+const ASSIST_WORD_POOL = Array.from(
+  new Set(
+    coreAssistWords.flatMap((word) =>
+      [word, ...buildNaturalVariants(word)].filter(isValidWord),
+    ),
+  ),
+)
+
+const FUN_FIRST_SEQUENCE = ASSIST_WORD_POOL.join('').split('')
+
+const MIN_COMPLETION_RUN_LENGTH_BY_BAND: Record<DifficultyBand, number> = {
+  guided: 2,
+  steady: 2,
+  climb: 2,
+  survival: 3,
+}
 
 const collectRunLetters = (
   occupancy: Map<string, TileEntity>,
@@ -62,7 +88,10 @@ const isOpenCell = (occupancy: Map<string, TileEntity>, x: number, y: number) =>
 const scoreOpportunity = (opportunity: AssistOpportunity) =>
   opportunity.runLength * 100 + opportunity.targetWord.length
 
-export const findAssistOpportunity = (tiles: TileEntity[]): AssistOpportunity | null => {
+export const findAssistOpportunity = (
+  tiles: TileEntity[],
+  difficultyBand: DifficultyBand = 'guided',
+): AssistOpportunity | null => {
   const lockedTiles = tiles.filter((tile) => !tile.isMoving)
   if (lockedTiles.length === 0) {
     return null
@@ -75,7 +104,7 @@ export const findAssistOpportunity = (tiles: TileEntity[]): AssistOpportunity | 
   lockedTiles.forEach((tile) => {
     ;(['horizontal', 'vertical'] as Axis[]).forEach((axis) => {
       const { letters, cells } = collectRunLetters(occupancy, tile, axis)
-      if (letters.length < MIN_COMPLETION_RUN_LENGTH) {
+      if (letters.length < MIN_COMPLETION_RUN_LENGTH_BY_BAND[difficultyBand]) {
         return
       }
 
@@ -96,7 +125,7 @@ export const findAssistOpportunity = (tiles: TileEntity[]): AssistOpportunity | 
           ? { x: (lastCell?.x ?? 0) + 1, y: lastCell?.y ?? 0 }
           : { x: lastCell?.x ?? 0, y: (lastCell?.y ?? 0) + 1 }
 
-      coreAssistWords.forEach((word) => {
+      ASSIST_WORD_POOL.forEach((word) => {
         ;[word, word.split('').reverse().join('')].forEach((variant) => {
           if (
             variant.startsWith(raw) &&
@@ -142,33 +171,61 @@ export const findAssistOpportunity = (tiles: TileEntity[]): AssistOpportunity | 
 export const createFunFirstPreview = (
   tiles: TileEntity[],
   assistCursor: number,
+  difficultyBand: DifficultyBand = 'guided',
 ): TilePreview => {
-  const opportunity = findAssistOpportunity(tiles)
+  const opportunity = findAssistOpportunity(tiles, difficultyBand)
   if (opportunity) {
     return {
       letter: opportunity.letter,
       assistMode: 'completion',
       targetWord: opportunity.targetWord,
-      hint: `Fun-first assist is offering ${opportunity.letter} to help finish ${opportunity.targetWord}. Reverse words count too.`,
+      hint:
+        difficultyBand === 'survival'
+          ? `Late-run assist spotted ${opportunity.letter} as a pressure-saving fit for ${opportunity.targetWord}.`
+          : `Assist is offering ${opportunity.letter} to help finish ${opportunity.targetWord}. Reverse words count too.`,
     }
   }
 
   const sequenceLetter = FUN_FIRST_SEQUENCE[assistCursor % FUN_FIRST_SEQUENCE.length]
-  if (sequenceLetter) {
+  if (sequenceLetter && (difficultyBand === 'guided' || difficultyBand === 'steady')) {
     const targetWord =
-      coreAssistWords[assistCursor % coreAssistWords.length] ?? coreAssistWords[0] ?? 'CAT'
+      ASSIST_WORD_POOL[assistCursor % ASSIST_WORD_POOL.length] ??
+      ASSIST_WORD_POOL[0] ??
+      'CAT'
 
     return {
       letter: sequenceLetter,
       assistMode: 'sequence',
       targetWord,
-      hint: `Fun-first assist is cycling easy letters for words like ${targetWord}.`,
+      hint:
+        difficultyBand === 'guided'
+          ? `Guided assist is cycling easy letters for words like ${targetWord}.`
+          : `Warm-up assist is still feeding friendly letters for words like ${targetWord}.`,
     }
   }
 
+  if (sequenceLetter && difficultyBand === 'climb' && assistCursor % 3 !== 2) {
+    const targetWord =
+      ASSIST_WORD_POOL[assistCursor % ASSIST_WORD_POOL.length] ??
+      ASSIST_WORD_POOL[0] ??
+      'CAT'
+
+    return {
+      letter: sequenceLetter,
+      assistMode: 'sequence',
+      targetWord,
+      hint: `The climb phase still nudges you toward workable letters, but not every drop will be a gift.`,
+    }
+  }
+
+  const fallbackLetter = LETTER_BAG[(assistCursor * 3) % LETTER_BAG.length] ?? 'A'
+
   return {
-    letter: LETTER_BAG[Math.floor(Math.random() * LETTER_BAG.length)] ?? 'A',
+    letter: fallbackLetter,
     assistMode: 'fallback',
-    hint: 'Fallback bag active. Reverse words still count in any straight line.',
+    hint:
+      difficultyBand === 'survival'
+        ? 'Survival pace is active. The bag is fairer than before, but pressure will punish slow setups.'
+        : 'Fallback bag active. Reverse words still count in any straight line.',
   }
 }

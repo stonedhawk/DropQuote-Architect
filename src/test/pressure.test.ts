@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { calculateRawPressure, getTickIntervalFromPressure } from '../game/utils/pressure'
+import {
+  calculateRawPressure,
+  getDifficultyBand,
+  getTickIntervalFromPressure,
+} from '../game/utils/pressure'
 import type { TileEntity } from '../game/types'
 
 const createLockedTile = (x: number, y: number): TileEntity => ({
@@ -13,24 +17,36 @@ const createLockedTile = (x: number, y: number): TileEntity => ({
 })
 
 describe('pressure utilities', () => {
-  it('excludes fortified rows from pressure calculations', () => {
+  it('keeps early pressure gentler than late-run pressure', () => {
     const tiles = [
       createLockedTile(0, 19),
       createLockedTile(1, 19),
       createLockedTile(2, 18),
       createLockedTile(3, 18),
+      createLockedTile(4, 18),
+      createLockedTile(5, 17),
+      createLockedTile(6, 17),
+      createLockedTile(7, 16),
     ]
 
-    expect(calculateRawPressure(tiles, [19])).toBe(0)
-    expect(calculateRawPressure(tiles, [])).toBe(1)
+    expect(calculateRawPressure(tiles, [19], 'guided')).toBeLessThan(
+      calculateRawPressure(tiles, [], 'survival'),
+    )
   })
 
-  it('speeds up tick intervals as pressure increases', () => {
-    expect(getTickIntervalFromPressure(10)).toBe(1350)
-    expect(getTickIntervalFromPressure(20)).toBe(1150)
-    expect(getTickIntervalFromPressure(35)).toBe(980)
-    expect(getTickIntervalFromPressure(55)).toBe(780)
-    expect(getTickIntervalFromPressure(75)).toBe(620)
-    expect(getTickIntervalFromPressure(95)).toBe(480)
+  it('speeds up tick intervals within a band and starts slower in guided runs', () => {
+    expect(getTickIntervalFromPressure(10, 'guided')).toBeGreaterThan(
+      getTickIntervalFromPressure(10, 'survival'),
+    )
+    expect(getTickIntervalFromPressure(55, 'guided')).toBeGreaterThan(
+      getTickIntervalFromPressure(75, 'guided'),
+    )
+  })
+
+  it('advances through difficulty bands by clear milestones', () => {
+    expect(getDifficultyBand(0)).toBe('guided')
+    expect(getDifficultyBand(4)).toBe('steady')
+    expect(getDifficultyBand(9)).toBe('climb')
+    expect(getDifficultyBand(16)).toBe('survival')
   })
 })

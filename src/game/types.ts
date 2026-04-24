@@ -2,6 +2,7 @@ export type Axis = 'horizontal' | 'vertical'
 export type PowerUpType = 'steel' | 'wrecking-ball' | 'mortar'
 export type QueuedPowerUp = Exclude<PowerUpType, 'wrecking-ball'> | null
 export type GamePhase = 'idle' | 'running' | 'scanning' | 'clearing' | 'game-over'
+export type DifficultyBand = 'guided' | 'steady' | 'climb' | 'survival'
 export type ObjectiveId =
   | 'double-clear-run'
   | 'combo-two'

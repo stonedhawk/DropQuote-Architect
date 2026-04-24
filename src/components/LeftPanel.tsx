@@ -11,7 +11,6 @@ const powerUps: PowerUpType[] = ['steel', 'wrecking-ball', 'mortar']
 
 export const LeftPanel = () => {
   const dispatch = useAppDispatch()
-  const nextTile = useAppSelector((state) => state.session.nextTile)
   const ink = useAppSelector((state) => state.economy.ink)
   const inventory = useAppSelector((state) => state.economy.inventory)
   const queuedPowerUp = useAppSelector((state) => state.economy.queuedPowerUp)
@@ -19,55 +18,51 @@ export const LeftPanel = () => {
 
   return (
     <aside className="flex flex-col gap-4">
-      <section className="arcade-panel px-5 py-5">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-fuchsia-700">
-          Next Tile
-        </p>
-        <div className="mt-4 flex items-center gap-4">
-          <div className="flex h-24 w-24 items-center justify-center rounded-[24px] border-4 border-white bg-[linear-gradient(180deg,_#f9a8d4,_#ec4899)] text-5xl font-black text-white shadow-[0_18px_30px_rgba(236,72,153,0.35)]">
-            {nextTile?.letter ?? '?'}
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-slate-800">
-              Queue a power-up to transform the next drop.
+      <section className="arcade-panel px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-fuchsia-700">
+              Run Shop
             </p>
-            {tutorialQueue.length > 0 ? (
-              <div className="rounded-[18px] border-4 border-white bg-emerald-100 px-3 py-3 text-sm font-bold text-emerald-950">
-                Starter assist active. The opening letters are seeded to help you
-                discover easy words first.
-              </div>
-            ) : null}
-            {queuedPowerUp ? (
-              <div className="space-y-2">
-                <span className="arcade-pill bg-cyan-300 text-cyan-950">
-                  Queued: {POWER_UP_LABELS[queuedPowerUp]}
-                </span>
-                <button
-                  type="button"
-                  className="arcade-button bg-slate-800 text-white shadow-[0_10px_0_#0f172a]"
-                  onClick={() => dispatch(clearQueuedPowerUp())}
-                >
-                  Clear Queue
-                </button>
-              </div>
-            ) : (
-              <span className="arcade-pill bg-white text-slate-800">No modifier queued</span>
-            )}
+            <h3 className="text-2xl font-black text-slate-950">{ink} Ink</h3>
           </div>
+          {queuedPowerUp ? (
+            <button
+              type="button"
+              className="arcade-button bg-slate-800 text-white shadow-[0_8px_0_#0f172a]"
+              onClick={() => dispatch(clearQueuedPowerUp())}
+            >
+              Clear {POWER_UP_LABELS[queuedPowerUp]}
+            </button>
+          ) : (
+            <span className="arcade-pill bg-white text-slate-800">No modifier queued</span>
+          )}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {tutorialQueue.length > 0 ? (
+            <span className="arcade-pill bg-emerald-300 text-emerald-950">
+              Starter assist active
+            </span>
+          ) : null}
+          <span className="arcade-pill bg-amber-300 text-amber-950">
+            Inventory {inventory.length}/3
+          </span>
         </div>
       </section>
 
-      <section className="arcade-panel px-5 py-5">
-        <div className="flex items-center justify-between gap-3">
+      <details className="arcade-panel group overflow-hidden px-5 py-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
-              Ink Balance
+              Power Shop
             </p>
-            <h3 className="text-3xl font-black text-slate-950">{ink}</h3>
+            <h3 className="text-2xl font-black text-slate-950">Spend Ink</h3>
           </div>
-          <span className="arcade-pill bg-amber-300 text-amber-950">Soft Currency</span>
-        </div>
+          <span className="arcade-pill bg-amber-300 text-amber-950">
+            Tap to {inventory.length >= 3 ? 'review' : 'buy'}
+          </span>
+        </summary>
 
         <div className="mt-4 grid gap-3">
           {powerUps.map((powerUp) => {
@@ -108,10 +103,10 @@ export const LeftPanel = () => {
             )
           })}
         </div>
-      </section>
+      </details>
 
-      <section className="arcade-panel px-5 py-5">
-        <div className="flex items-center justify-between gap-3">
+      <details className="arcade-panel group overflow-hidden px-5 py-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.35em] text-amber-700">
               Inventory
@@ -121,7 +116,7 @@ export const LeftPanel = () => {
           <span className="arcade-pill bg-fuchsia-300 text-fuchsia-950">
             Keys 1-3
           </span>
-        </div>
+        </summary>
 
         <div className="mt-4 grid gap-3">
           {Array.from({ length: 3 }, (_, index) => inventory[index] ?? null).map(
@@ -155,7 +150,7 @@ export const LeftPanel = () => {
             ),
           )}
         </div>
-      </section>
+      </details>
     </aside>
   )
 }

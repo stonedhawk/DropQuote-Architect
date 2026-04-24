@@ -22,20 +22,24 @@ describe('assist generator', () => {
 
     expect(opportunity).not.toBeNull()
     expect(opportunity?.letter).toBe('T')
-    expect(opportunity?.targetWord).toBe('CAT')
+    expect(['CAT', 'CATS']).toContain(opportunity?.targetWord)
   })
 
   it('does not treat a single lonely letter as a completion opportunity', () => {
-    const preview = createFunFirstPreview([createLockedTile({ letter: 'O', x: 4, y: 19 })], 0)
+    const preview = createFunFirstPreview(
+      [createLockedTile({ letter: 'O', x: 4, y: 19 })],
+      0,
+      'guided',
+    )
 
     expect(preview.assistMode).toBe('sequence')
     expect(preview.letter).toBe('C')
   })
 
   it('falls back safely when the board has no assistable opportunities', () => {
-    const preview = createFunFirstPreview([], 4)
+    const preview = createFunFirstPreview([], 4, 'survival')
 
     expect(preview.letter).toBeTruthy()
-    expect(['sequence', 'fallback']).toContain(preview.assistMode)
+    expect(preview.assistMode).toBe('fallback')
   })
 })

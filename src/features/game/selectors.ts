@@ -2,7 +2,12 @@ import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '../../app/store'
 import { scanWordsAtPositions } from '../../game/utils/board'
 import { isValidWord } from '../../game/utils/dictionaryService'
-import { getBoardFillPercent, getTickIntervalFromPressure } from '../../game/utils/pressure'
+import {
+  getBoardFillPercent,
+  getDifficultyBand,
+  getNextDifficultyMilestone,
+  getTickIntervalFromPressure,
+} from '../../game/utils/pressure'
 import { buildOccupancyMap, canOccupyPosition, positionKey } from '../../game/utils/board'
 import { tilesSelectors } from '../tiles/tilesSlice'
 
@@ -35,9 +40,58 @@ export const selectPressureContributors = createSelector(
     tiles.filter((tile) => !fortifiedRows.includes(tile.y)),
 )
 
+export const selectDifficultyBand = createSelector(
+  [(state: RootState) => state.session.totalWordsCleared],
+  (totalWordsCleared) => getDifficultyBand(totalWordsCleared),
+)
+
+export const selectDifficultyStage = createSelector(
+  [
+    selectDifficultyBand,
+    (state: RootState) => state.session.totalWordsCleared,
+  ],
+  (band, totalWordsCleared) => {
+    const nextMilestone = getNextDifficultyMilestone(totalWordsCleared)
+
+    if (band === 'guided') {
+      return {
+        band,
+        label: 'Guided Build',
+        helper: 'Strong assist and slow pressure to help you learn the board.',
+        nextMilestone,
+      }
+    }
+
+    if (band === 'steady') {
+      return {
+        band,
+        label: 'Steady Rise',
+        helper: 'Assist is still helping, but the board is asking for cleaner setups.',
+        nextMilestone,
+      }
+    }
+
+    if (band === 'climb') {
+      return {
+        band,
+        label: 'Tower Climb',
+        helper: 'Pressure and speed now matter. Plan around space, not just obvious clears.',
+        nextMilestone,
+      }
+    }
+
+    return {
+      band,
+      label: 'Survival Push',
+      helper: 'Late-run pace. Power-ups and pressure control decide how long you last.',
+      nextMilestone,
+    }
+  },
+)
+
 export const selectTickInterval = createSelector(
-  [(state: RootState) => state.pressure.current],
-  (pressure) => getTickIntervalFromPressure(pressure),
+  [(state: RootState) => state.pressure.current, selectDifficultyBand],
+  (pressure, difficultyBand) => getTickIntervalFromPressure(pressure, difficultyBand),
 )
 
 export const selectBoardFillPercent = createSelector([selectLockedTiles], (tiles) =>

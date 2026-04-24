@@ -1,7 +1,11 @@
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { POWER_UP_LABELS } from '../game/constants'
 import { acceptedExampleWords } from '../game/utils/dictionaryService'
-import { selectAudioState, selectCurrentObjective } from '../features/game/selectors'
+import {
+  selectAudioState,
+  selectCurrentObjective,
+  selectDifficultyStage,
+} from '../features/game/selectors'
 import { setAudioMuted } from '../features/game/thunks'
 import { PressureChart } from './PressureChart'
 
@@ -14,6 +18,7 @@ export const RightPanel = () => {
   const fortifiedRows = useAppSelector((state) => state.pressure.fortifiedRows)
   const tick = useAppSelector((state) => state.session.tick)
   const objective = useAppSelector(selectCurrentObjective)
+  const difficultyStage = useAppSelector(selectDifficultyStage)
   const audioState = useAppSelector(selectAudioState)
   const objectiveProgressPercent = objective
     ? Math.round((objective.progress / objective.target) * 100)
@@ -22,52 +27,24 @@ export const RightPanel = () => {
   return (
     <aside className="flex flex-col gap-4">
       <section className="arcade-panel px-5 py-5">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-emerald-700">
-          How To Play
-        </p>
-        <div className="mt-4 space-y-3 text-sm font-semibold text-slate-800">
-          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-fuchsia-700">
-              1. Drop and align
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-amber-700">
+              Heat Readout
             </p>
-            <p className="mt-2">
-              Every falling tile locks when it lands. A word only clears after that
-              lock happens.
+            <h3 className="text-2xl font-black text-slate-950">{difficultyStage.label}</h3>
+            <p className="mt-1 text-sm font-semibold text-slate-700">
+              {difficultyStage.helper}
             </p>
           </div>
-          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-700">
-              2. Make straight words
-            </p>
-            <p className="mt-2">
-              Valid clears are 3+ connected letters in one horizontal row or one
-              vertical column. Both reading directions count. Diagonals do not count.
-            </p>
-          </div>
-          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-700">
-              3. Keep pressure low
-            </p>
-            <p className="mt-2">
-              Clearing words frees space, earns Ink, and slows the pressure climb.
-              If pressure reaches 100%, the run ends.
-            </p>
-          </div>
-          <div className="rounded-[20px] border-4 border-dashed border-white/80 bg-white/70 px-4 py-4">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-600">
-              Good starter words
-            </p>
-            <p className="mt-2 text-base font-black text-slate-950">
-              {acceptedExampleWords.join(' • ')}
-            </p>
-          </div>
+          {difficultyStage.nextMilestone ? (
+            <span className="arcade-pill bg-cyan-300 text-cyan-950">
+              Next ramp {difficultyStage.nextMilestone}
+            </span>
+          ) : (
+            <span className="arcade-pill bg-rose-300 text-rose-950">Final ramp</span>
+          )}
         </div>
-      </section>
-
-      <section className="arcade-panel px-5 py-5">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-amber-700">
-          Heat Readout
-        </p>
         <PressureChart
           currentPressure={pressure}
           maxPressure={maxPressure}
@@ -100,7 +77,7 @@ export const RightPanel = () => {
               Live Objective
             </p>
             <h3 className="text-2xl font-black text-slate-950">
-              {objective?.title ?? 'Unlock after 3 clears'}
+              {objective?.title ?? 'Unlock after 5 clears'}
             </h3>
           </div>
           <button
@@ -147,15 +124,63 @@ export const RightPanel = () => {
           </div>
         ) : (
           <div className="mt-4 rounded-[20px] border-4 border-dashed border-white/70 bg-white/60 px-4 py-4 text-sm font-semibold text-slate-700">
-            Clear 3 total words to start the rotating objective loop.
+            Clear 5 total words to start the rotating objective loop.
           </div>
         )}
       </section>
 
-      <section className="arcade-panel px-5 py-5">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
-          Recent Clears
-        </p>
+      <details className="arcade-panel group overflow-hidden px-5 py-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-emerald-700">
+              How To Play
+            </p>
+            <h3 className="text-2xl font-black text-slate-950">Quick Guide</h3>
+          </div>
+          <span className="arcade-pill bg-white text-slate-800">Open tips</span>
+        </summary>
+
+        <div className="mt-4 space-y-3 text-sm font-semibold text-slate-800">
+          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-fuchsia-700">
+              1. Drop and align
+            </p>
+            <p className="mt-2">
+              Every falling tile locks when it lands. A word only clears after that
+              lock happens.
+            </p>
+          </div>
+          <div className="rounded-[20px] border-4 border-white bg-white/85 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-700">
+              2. Make straight words
+            </p>
+            <p className="mt-2">
+              Valid clears are 3+ connected letters in one horizontal row or one
+              vertical column. Both reading directions count. Diagonals do not count.
+            </p>
+          </div>
+          <div className="rounded-[20px] border-4 border-dashed border-white/80 bg-white/70 px-4 py-4">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-600">
+              Good starter words
+            </p>
+            <p className="mt-2 text-base font-black text-slate-950">
+              {acceptedExampleWords.join(' • ')}
+            </p>
+          </div>
+        </div>
+      </details>
+
+      <details className="arcade-panel group overflow-hidden px-5 py-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
+              Recent Clears
+            </p>
+            <h3 className="text-2xl font-black text-slate-950">Run History</h3>
+          </div>
+          <span className="arcade-pill bg-white text-slate-800">Open list</span>
+        </summary>
+
         <div className="mt-4 space-y-3">
           {recentMatches.length > 0 ? (
             recentMatches.map((match) => (
@@ -180,12 +205,19 @@ export const RightPanel = () => {
             </div>
           )}
         </div>
-      </section>
+      </details>
 
-      <section className="arcade-panel px-5 py-5">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-fuchsia-700">
-          Controls
-        </p>
+      <details className="arcade-panel group overflow-hidden px-5 py-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.35em] text-fuchsia-700">
+              Controls
+            </p>
+            <h3 className="text-2xl font-black text-slate-950">Input Guide</h3>
+          </div>
+          <span className="arcade-pill bg-white text-slate-800">Open keys</span>
+        </summary>
+
         <div className="mt-4 grid gap-3 text-sm font-semibold text-slate-800">
           <div className="flex items-center justify-between rounded-[18px] bg-white/80 px-4 py-3">
             <span>Move left / right</span>
@@ -208,7 +240,7 @@ export const RightPanel = () => {
             <span className="arcade-pill bg-slate-800 text-white">C</span>
           </div>
         </div>
-      </section>
+      </details>
     </aside>
   )
 }
