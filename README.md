@@ -1,63 +1,80 @@
 # DropQuote Architect
 
-Arcade-style word-stacking game built with React, Vite, Tailwind CSS v4, and Redux Toolkit entity state.
+DropQuote Architect is a bright arcade word-builder where falling letter tiles lock into a live board, words clear space, pressure speeds the game up, and power-ups help you stay alive.
 
 ![DropQuote Architect gameplay screenshot](docs/images/dropquote-architect-gameplay.png)
 
-## What It Is
+## Play It
 
-DropQuote Architect is a real-time browser game where single letter tiles fall into a 10x20 board. Your goal is to steer each letter into place so that, once it locks, it completes a valid horizontal or vertical word of at least 3 letters.
+- Live site: [https://stonedhawk.github.io/DropQuote-Architect/](https://stonedhawk.github.io/DropQuote-Architect/)
+- Local dev server: `npm run dev`
 
-When words clear:
+## What Makes It Fun
 
-- space opens up
-- unsupported tiles fall
-- combos can trigger follow-up clears
-- pressure drops
-- Ink is earned for power-ups
+- Real-time falling letters instead of turn-based word entry
+- Horizontal and vertical word clears
+- Reverse words count too
+- Cascades can chain into bonus clears
+- Pressure rises as the board gets denser
+- Ink lets you buy tactical power-ups mid-run
 
-If the board gets too crowded and the pressure meter reaches 100%, the run ends.
+This project is also a technical playground for high-frequency React state updates using Redux Toolkit entity state, discrete tick-based simulation, and a charted pressure HUD.
 
 ## How To Play
 
-Core rules:
+Your goal is simple: guide each falling letter into place so that, after it locks, it completes a valid word of at least 3 letters.
 
-- A word only clears after the falling tile locks into the grid.
-- Only straight horizontal or vertical words count.
-- Words must be at least 3 letters long.
-- Diagonal strings do not count.
-- Pressure rises as locked tiles accumulate.
+Important rules:
 
-Starter words that are accepted by the current dictionary include:
+- Words clear only after the active tile locks
+- Words must be straight, not diagonal
+- Horizontal and vertical words both count
+- Forward and reverse reading both count
+- Clearing words opens space and can trigger cascades
+- If Pressure reaches `100%`, the run ends
 
-`CAT`, `DOG`, `SUN`, `STAR`, `CODE`, `GAME`, `TILE`, `STACK`
+Examples of words the current game accepts include:
 
-Controls:
+`CAT`, `DOG`, `SUN`, `STAR`, `CODE`, `GAME`, `WORD`, `COD`, `GUN`, `GUNS`, `SOS`
 
-- `Left Arrow` / `Right Arrow`: move the falling tile
+## Controls
+
+Keyboard:
+
+- `Left Arrow` / `Right Arrow`: move tile
 - `Down Arrow`: soft drop
 - `Space`: hard drop
-- `1`, `2`, `3`: use power-ups from inventory slots
+- `1`, `2`, `3`: use a power-up from inventory
 - `C`: clear the queued next-drop modifier
 
-The live UI now includes persistent how-to-play hints and example words so the rules stay visible during gameplay.
+Touch support:
+
+- Tap a column: move toward that lane
+- Swipe down: soft drop
+- Double tap: hard drop
 
 ## Power-Ups
 
-- `Steel Beams`: modifies the next dropped tile; if that tile is part of a cleared word, the row is fortified and pressure drops sharply.
-- `Wrecking Ball`: destroys an entire column from the current drop lane downward.
-- `Mortar`: turns the next dropped tile into a wildcard.
+- `Steel Beams`: queue a reinforced tile; if it clears in a word, its row gets fortified and pressure drops sharply
+- `Wrecking Ball`: blasts through a column to create breathing room
+- `Mortar`: turns the next tile into a wildcard
 
-Power-ups are bought with Ink and stored in a 3-slot side inventory.
+Power-ups cost Ink and live in a 3-slot inventory.
 
-## Gameplay Systems
+## Game Systems
 
-- `Entity-driven board state`: tiles are stored with RTK `createEntityAdapter` instead of a mutable 2D string array.
-- `Discrete tick loop`: falling motion is driven by a custom React hook and RTK actions, with no physics engine.
-- `Word scanning`: valid words are detected from settled board state after each lock/board update.
-- `Cascades`: clears trigger gravity, which can trigger more clears.
-- `Pressure meter`: the fuller the board gets, the faster the global tick rate becomes.
-- `Pressure chart`: rendered through an isolated `PressureChart` adapter so the HUD can evolve without touching game logic.
+- `Entity-driven board state`
+  Every tile is stored as an RTK entity object instead of mutating a 2D string matrix.
+- `Custom tick loop`
+  Falling motion is driven by a discrete game tick, not a physics engine.
+- `Word scanning`
+  The board scans for horizontal and vertical words after each lock and after gravity resolves.
+- `Cascades`
+  Cleared letters disappear, unsupported letters fall, and combo chains can happen naturally.
+- `Pressure HUD`
+  Locked tiles raise pressure over time, and higher pressure speeds up the tick rate.
+- `Fun-first assist tuning`
+  After the guided opener, the game biases upcoming letters toward easier, more solvable word opportunities.
 
 ## Tech Stack
 
@@ -72,18 +89,22 @@ Power-ups are bought with Ink and stored in a 3-slot side inventory.
 
 ## Project Structure
 
-High-signal folders:
+- `src/app`
+  Redux store and typed hooks
+- `src/features`
+  RTK slices, selectors, and gameplay thunks
+- `src/game`
+  Pure gameplay utilities, constants, word scanning, assist tuning, and pressure logic
+- `src/components`
+  Board, HUD panels, and pressure chart
+- `src/hooks`
+  Tick loop, keyboard controls, touch controls, and audio hooks
+- `src/data`
+  Dictionary and curated assist word data
+- `src/test`
+  Unit and integration coverage
 
-- [`src/app`](src/app): Redux store and typed hooks
-- [`src/features`](src/features): slices, selectors, and gameplay thunks
-- [`src/game`](src/game): domain types, constants, and pure utility logic
-- [`src/components`](src/components): UI panels, board, and pressure chart
-- [`src/hooks`](src/hooks): tick loop and keyboard input hooks
-- [`src/test`](src/test): unit and integration tests
-
-Dictionary data lives in `src/data/dictionary.json` and is excluded through `.aiignore`.
-
-## Local Development
+## Run It Locally
 
 Install dependencies:
 
@@ -91,7 +112,7 @@ Install dependencies:
 npm install
 ```
 
-Start the dev server:
+Start the game:
 
 ```bash
 npm run dev
@@ -103,13 +124,13 @@ Run tests:
 npm test
 ```
 
-Run linting:
+Run lint:
 
 ```bash
 npm run lint
 ```
 
-Create a production build:
+Build production output:
 
 ```bash
 npm run build
@@ -117,47 +138,65 @@ npm run build
 
 ## Testing Coverage
 
-The current test suite covers:
+The current suite covers:
 
-- collision and movement boundaries
-- word scanning
+- word detection in both directions
 - wildcard resolution
-- gravity/collapse behavior
+- movement and collision rules
+- gravity and cascades
 - pressure scaling
-- game-loop integration
-- power-up behaviors including Wrecking Ball and Steel fortification
+- guided opening and objective flow
+- power-up behavior
+- touch controls
 
-## GitHub Pages Deployment
+## Current Phase
 
-This repo is configured to deploy to GitHub Pages through GitHub Actions.
+The project is past the first playable milestone and is now in a **fun-first tuning phase**.
 
-Expected production URL:
+What is already in place:
 
-[https://stonedhawk.github.io/DropQuote-Architect/](https://stonedhawk.github.io/DropQuote-Architect/)
-
-The workflow is defined in:
-
-- [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-
-Vite’s Pages base path handling is configured in:
-
-- [`vite.config.ts`](vite.config.ts)
-
-## Current Status
-
-Implemented:
-
-- playable falling-tile loop
+- playable falling-letter game loop
 - RTK entity-based board state
-- word clearing and cascades
-- pressure tracking and chart HUD
+- word clears, gravity, and cascades
+- pressure chart and game-over pressure cap
 - Ink economy and 3 power-ups
-- persistent live gameplay hints
-- test suite and GitHub Pages deployment workflow
+- guided opening and live objective system
+- touch controls and GitHub Pages deployment
+- dictionary rebuild for better recognition of common short words
 
-Next likely improvements:
+What we are actively tuning right now:
 
-- richer dictionary data
-- stronger clear/combo animations and sound
-- title screen and game-over overlay polish
-- more deliberate balance tuning for pressure and Ink
+- broader dictionary coverage for obvious English words
+- better balance so the game feels generous, not stingy
+- clearer word trust, so obvious words consistently count
+- early-game pacing and spawn quality
+
+## What We Plan Next
+
+Near-term roadmap:
+
+1. Expand the accepted dictionary so more short, medium, and eventually larger English words are recognized reliably.
+2. Improve spawn tuning so the board produces more satisfying word opportunities and fewer dead runs.
+3. Add stronger visual feedback for clears, combos, and valid-word recognition.
+4. Polish the game-over and restart loop so a failed run still feels rewarding.
+5. Improve mobile feel and responsive ergonomics further without sacrificing board readability.
+
+Later roadmap:
+
+1. Richer audio and animation polish
+2. More deliberate progression and difficulty scaling
+3. Broader dictionary tooling and import pipeline for larger English vocab coverage
+4. More content depth around objectives, runs, and replayability
+
+## Deployment
+
+This repo deploys to GitHub Pages through GitHub Actions.
+
+- Workflow: `.github/workflows/deploy-pages.yml`
+- Production URL: [https://stonedhawk.github.io/DropQuote-Architect/](https://stonedhawk.github.io/DropQuote-Architect/)
+
+## Notes
+
+- The game intentionally uses a custom tick loop and RTK entity state instead of a physics engine.
+- Dictionary data is layered so gameplay-friendly assist words and broader accepted words can evolve separately.
+- This repo is still actively tuned for feel, so gameplay balance is expected to keep improving.
