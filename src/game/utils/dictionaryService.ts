@@ -1,7 +1,5 @@
-import gameReadySmall from '../../data/game-ready-small.json'
-import rawDictionary from '../../data/dictionary.json'
 import coreWords from '../../data/core-words.json'
-import validWordAdditions from '../../data/valid-word-additions.json'
+import validGameplayWords from '../../data/valid-gameplay-words.json'
 
 const normalizeWordList = (entries: string[]) =>
   entries
@@ -11,11 +9,6 @@ const normalizeWordList = (entries: string[]) =>
 export const coreAssistWords = normalizeWordList(coreWords as string[])
 export const acceptedExampleWords = coreAssistWords.slice(0, 8)
 
-const validationDictionary = new Set([
-  ...normalizeWordList(gameReadySmall as string[]),
-  ...normalizeWordList(rawDictionary as string[]),
-  ...coreAssistWords,
-  ...normalizeWordList(validWordAdditions as string[]),
-])
+const validationDictionary = new Set(normalizeWordList(validGameplayWords as string[]))
 
 export const isValidWord = (word: string) => validationDictionary.has(word.toUpperCase())
