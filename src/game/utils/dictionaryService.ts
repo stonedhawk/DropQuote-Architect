@@ -1,6 +1,9 @@
-import rawDictionary from '../../data/dictionary.json'
+import { TrieEngine } from '@rahulmrx/game-ready-dictionary'
+import trieData from '@rahulmrx/game-ready-dictionary/data'
 import coreWords from '../../data/core-words.json'
-import validWordAdditions from '../../data/valid-word-additions.json'
+import validGameplayWords from '../../data/valid-gameplay-words.json'
+
+const trie = new TrieEngine(trieData)
 
 const normalizeWordList = (entries: string[]) =>
   entries
@@ -10,10 +13,9 @@ const normalizeWordList = (entries: string[]) =>
 export const coreAssistWords = normalizeWordList(coreWords as string[])
 export const acceptedExampleWords = coreAssistWords.slice(0, 8)
 
-const fallbackDictionary = new Set([
-  ...normalizeWordList(rawDictionary as string[]),
-  ...coreAssistWords,
-  ...normalizeWordList(validWordAdditions as string[]),
-])
+const validationDictionary = new Set(normalizeWordList(validGameplayWords as string[]))
 
-export const isValidWord = (word: string) => fallbackDictionary.has(word.toUpperCase())
+export const isValidWord = (word: string) => {
+  const normalized = word.toUpperCase()
+  return validationDictionary.has(normalized) || trie.validate(normalized)
+}

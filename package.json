@@ -1,16 +1,18 @@
 {
   "name": "dropquote-architect",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build:wordlist": "node scripts/build-valid-gameplay-words.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
+    "@rahulmrx/game-ready-dictionary": "^1.0.8",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.2",
     "react": "^19.2.4",

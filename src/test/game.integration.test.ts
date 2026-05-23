@@ -4,6 +4,7 @@ import { economyActions } from '../features/economy/economySlice'
 import { advanceGameTick, activateInventorySlot, buyPowerUp, hardDropActiveTile, initializeGame, moveActiveHorizontally, restartGame } from '../features/game/thunks'
 import { selectActiveTile, selectLockedTiles, selectProjectedMatches, selectTutorialCoach } from '../features/game/selectors'
 import { sessionActions } from '../features/session/sessionSlice'
+import { MIN_WORDS_BEFORE_OBJECTIVES } from '../game/constants'
 import { tilesActions } from '../features/tiles/tilesSlice'
 import { createObjectiveState } from '../game/utils/objectives'
 import type { TileEntity } from '../game/types'
@@ -123,7 +124,7 @@ describe('game loop integration', () => {
 
     expect(store.getState().pressure.fortifiedRows).toContain(19)
     expect(store.getState().pressure.current).toBe(0)
-    expect(store.getState().pressure.history.length).toBeGreaterThan(1)
+    expect(store.getState().pressure.history.at(-1)?.pressure).toBe(0)
   })
 
   it('previews a clear when the active tile would finish the guided word', () => {
@@ -186,7 +187,7 @@ describe('game loop integration', () => {
     const store = createAppStore()
 
     store.dispatch(sessionActions.guidedOpeningCompleted())
-    store.dispatch(sessionActions.wordsClearedAdded(2))
+    store.dispatch(sessionActions.wordsClearedAdded(MIN_WORDS_BEFORE_OBJECTIVES - 2))
     store.dispatch(sessionActions.nextTilePrepared({ letter: 'C' }))
     store.dispatch(
       tilesActions.tileSpawned(
@@ -206,7 +207,38 @@ describe('game loop integration', () => {
     store.dispatch(hardDropActiveTile())
 
     expect(store.getState().session.recentMatches.map((match) => match.resolvedText)).toContain('CAB')
-    expect(store.getState().session.totalWordsCleared).toBeGreaterThanOrEqual(3)
+    expect(store.getState().session.totalWordsCleared).toBeGreaterThanOrEqual(
+      MIN_WORDS_BEFORE_OBJECTIVES - 1,
+    )
+    expect(store.getState().session.objective).toBeNull()
+  })
+
+  it('starts objectives once the unlock threshold is reached', () => {
+    const store = createAppStore()
+
+    store.dispatch(sessionActions.guidedOpeningCompleted())
+    store.dispatch(sessionActions.wordsClearedAdded(MIN_WORDS_BEFORE_OBJECTIVES - 1))
+    store.dispatch(sessionActions.nextTilePrepared({ letter: 'C' }))
+    store.dispatch(
+      tilesActions.tileSpawned(
+        createLockedTile({ id: 'cab-a', letter: 'A', x: 3, y: 19 }),
+      ),
+    )
+    store.dispatch(
+      tilesActions.tileSpawned(
+        createLockedTile({ id: 'cab-b', letter: 'B', x: 4, y: 19 }),
+      ),
+    )
+    store.dispatch(initializeGame())
+
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(moveActiveHorizontally(-1))
+    store.dispatch(hardDropActiveTile())
+
+    expect(store.getState().session.totalWordsCleared).toBeGreaterThanOrEqual(
+      MIN_WORDS_BEFORE_OBJECTIVES,
+    )
     expect(store.getState().session.objective?.id).toBe('double-clear-run')
   })
 
@@ -214,7 +246,7 @@ describe('game loop integration', () => {
     const store = createAppStore()
 
     store.dispatch(sessionActions.guidedOpeningCompleted())
-    store.dispatch(sessionActions.wordsClearedAdded(3))
+    store.dispatch(sessionActions.wordsClearedAdded(MIN_WORDS_BEFORE_OBJECTIVES))
     store.dispatch(sessionActions.objectiveSet(createObjectiveState('double-clear-run')))
     store.dispatch(sessionActions.nextTilePrepared({ letter: 'C' }))
     store.dispatch(

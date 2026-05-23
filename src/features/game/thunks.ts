@@ -25,7 +25,7 @@ import {
 import { createFunFirstPreview } from '../../game/utils/assist'
 import { isValidWord } from '../../game/utils/dictionaryService'
 import { createObjectiveState, getNextObjectiveId, rewardCanBeGranted } from '../../game/utils/objectives'
-import { calculateRawPressure } from '../../game/utils/pressure'
+import { calculateRawPressure, getDifficultyBand } from '../../game/utils/pressure'
 import {
   getPressureReliefForSteel,
   inkForWordMatch,
@@ -61,7 +61,11 @@ const getUpcomingPreview = (state: RootState): { preview: TilePreview; fromTutor
   }
 
   return {
-    preview: createFunFirstPreview(selectAllTiles(state), state.session.assistCursor),
+    preview: createFunFirstPreview(
+      selectAllTiles(state),
+      state.session.assistCursor,
+      getDifficultyBand(state.session.totalWordsCleared),
+    ),
     fromTutorial: false,
   }
 }
@@ -326,9 +330,11 @@ const advancePressureObjectiveTick = (
 const applyPressureSnapshot = (dispatch: AppDispatch, getState: () => RootState) => {
   const state = getState()
   const previousPressure = state.pressure.current
+  const difficultyBand = getDifficultyBand(state.session.totalWordsCleared)
   const rawPressure = calculateRawPressure(
     selectLockedTiles(state),
     state.pressure.fortifiedRows,
+    difficultyBand,
   )
 
   dispatch(
@@ -419,7 +425,7 @@ const spawnNextTile = (dispatch: AppDispatch, getState: () => RootState) => {
           ? `${getState().session.objective?.title}: ${getState().session.objective?.description}`
           : getState().session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES
             ? `Fun-first assist is live. Clear ${MIN_WORDS_BEFORE_OBJECTIVES - getState().session.totalWordsCleared} more word${MIN_WORDS_BEFORE_OBJECTIVES - getState().session.totalWordsCleared === 1 ? '' : 's'} to unlock live objectives.`
-            : 'Drop in and keep the combo alive.',
+            : `Difficulty band: ${getDifficultyBand(getState().session.totalWordsCleared)}. Drop in and keep the combo alive.`,
     ),
   )
 
@@ -588,7 +594,7 @@ const resolveBoardAfterLock = (
               ? `Cascade x${maxCascade}! Cleared ${resolvedWords.join(' + ')}.`
               : getState().session.totalWordsCleared < MIN_WORDS_BEFORE_OBJECTIVES
                 ? `Cleared ${resolvedWords.join(' + ')}. Fun-first assist stays on until you reach ${MIN_WORDS_BEFORE_OBJECTIVES} total clears.`
-                : `Cleared ${resolvedWords.join(' + ')}.`,
+                : `Cleared ${resolvedWords.join(' + ')}. The run is now in the ${getDifficultyBand(getState().session.totalWordsCleared)} band.`,
         ),
       )
     }

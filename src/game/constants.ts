@@ -9,7 +9,12 @@ export const MAX_INVENTORY_SLOTS = 3
 export const STARTER_TUTORIAL_QUEUE = ['C', 'A', 'T', 'S', 'U', 'N', 'C', 'O', 'D', 'E']
 export const PRESSURE_OBJECTIVE_THRESHOLD = 45
 export const PRESSURE_OBJECTIVE_TICKS = 6
-export const MIN_WORDS_BEFORE_OBJECTIVES = 3
+export const MIN_WORDS_BEFORE_OBJECTIVES = 5
+export const DIFFICULTY_BAND_THRESHOLDS = {
+  steady: 4,
+  climb: 9,
+  survival: 16,
+} as const
 
 export const LETTER_BAG = [
   'A',
