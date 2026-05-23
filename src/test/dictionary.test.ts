@@ -78,4 +78,10 @@ describe('dictionary service', () => {
       expect.arrayContaining(['CAT', 'DOG', 'SUN', 'STAR']),
     )
   })
+
+  it('harnesses the high-performance @rahulmrx/game-ready-dictionary TrieEngine for broader coverage', () => {
+    expect(isValidWord('ZEBRA')).toBe(true)
+    expect(isValidWord('QUARTZ')).toBe(true)
+    expect(isValidWord('JOURNEY')).toBe(true)
+  })
 })
