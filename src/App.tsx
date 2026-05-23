@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from './app/hooks'
 import { GameBoard } from './components/GameBoard'
 import { LeftPanel } from './components/LeftPanel'
@@ -16,9 +16,11 @@ import {
 import { useGameAudio } from './hooks/useGameAudio'
 import { useGameInput } from './hooks/useGameInput'
 import { useGameTick } from './hooks/useGameTick'
+import { acceptedExampleWords } from './game/utils/dictionaryService'
 
 function App() {
   const dispatch = useAppDispatch()
+  const [showGuide, setShowGuide] = useState(false)
   const activeTile = useAppSelector(selectActiveTile)
   const tickInterval = useAppSelector(selectTickInterval)
   const phase = useAppSelector((state) => state.session.phase)
@@ -61,6 +63,14 @@ function App() {
               </span>
               <span className="arcade-pill bg-emerald-300">{boardFill}% filled</span>
             </div>
+
+            <button
+              type="button"
+              className="arcade-button bg-cyan-500 text-white shadow-[0_10px_0_#0e7490] hover:bg-cyan-400"
+              onClick={() => setShowGuide(true)}
+            >
+              Guide & Controls
+            </button>
 
             <button
               type="button"
@@ -194,6 +204,116 @@ function App() {
                   onClick={() => dispatch(restartGame())}
                 >
                   Play Again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showGuide ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md transition-all duration-300 animate-fade-in">
+          <div className="arcade-panel relative w-full max-w-4xl overflow-y-auto max-h-[90vh] px-6 py-6 sm:px-8 sm:py-8 transition-all duration-300 scale-in">
+            <button
+              type="button"
+              className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 text-xl font-bold transition-all shadow-[0_4px_0_#cbd5e1] active:translate-y-0.5 active:shadow-none"
+              onClick={() => setShowGuide(false)}
+            >
+              ✕
+            </button>
+            <div className="relative">
+              <p className="text-xs font-black uppercase tracking-[0.35em] text-cyan-700">
+                Architect Manual
+              </p>
+              <h2 className="mt-2 text-3xl font-black text-slate-950">
+                How to Play & Controls
+              </h2>
+              
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="rounded-[22px] border-4 border-white bg-white/85 px-5 py-4 shadow-sm">
+                    <h3 className="text-lg font-black text-slate-950">1. Align & Drop</h3>
+                    <p className="mt-2 text-sm font-semibold text-slate-700">
+                      Guide the falling letter tiles. Every tile locks when it lands at the bottom or on top of another tile. Word clearances only trigger *after* the active tile locks!
+                    </p>
+                  </div>
+
+                  <div className="rounded-[22px] border-4 border-white bg-white/85 px-5 py-4 shadow-sm">
+                    <h3 className="text-lg font-black text-slate-950">2. Valid Words</h3>
+                    <p className="mt-2 text-sm font-semibold text-slate-700">
+                      Create straight words of **3 or more connected letters** horizontally (left-to-right or right-to-left) or vertically (top-to-bottom or bottom-to-top). Diagonal words do not count.
+                    </p>
+                  </div>
+
+                  <div className="rounded-[22px] border-4 border-white bg-white/85 px-5 py-4 shadow-sm">
+                    <h3 className="text-lg font-black text-slate-950">3. Pressure & Combo</h3>
+                    <p className="mt-2 text-sm font-semibold text-slate-700">
+                      Clearing words opens up board space and relieves **Tower Pressure**. If Pressure hits 100%, the tower collapses and the run ends! Support-free tiles drop, which can chain into combo multipliers.
+                    </p>
+                  </div>
+                  
+                  <div className="rounded-[22px] border-4 border-dashed border-white/80 bg-white/70 px-5 py-4">
+                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-fuchsia-700">Starter Vocab Words</h3>
+                    <p className="mt-2 text-base font-black text-slate-950">
+                      {acceptedExampleWords.join(' • ')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-[22px] border-4 border-white bg-white/85 px-5 py-4 shadow-sm">
+                    <h3 className="text-lg font-black text-slate-950 mb-3">Keyboard Controls</h3>
+                    <div className="grid gap-2 text-xs font-semibold text-slate-800">
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Move Tile</span>
+                        <span className="arcade-pill bg-cyan-300 text-cyan-950 !min-h-7 !py-1 text-[10px]">Left / Right Arrows</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Soft Drop</span>
+                        <span className="arcade-pill bg-emerald-300 text-emerald-950 !min-h-7 !py-1 text-[10px]">Down Arrow</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Hard Drop</span>
+                        <span className="arcade-pill bg-amber-300 text-amber-950 !min-h-7 !py-1 text-[10px]">Spacebar</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Use Power-Ups</span>
+                        <span className="arcade-pill bg-fuchsia-300 text-fuchsia-950 !min-h-7 !py-1 text-[10px]">Keys 1, 2, 3</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Discard Modifier</span>
+                        <span className="arcade-pill bg-slate-800 text-white !min-h-7 !py-1 text-[10px]">Key C</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border-4 border-white bg-white/85 px-5 py-4 shadow-sm">
+                    <h3 className="text-lg font-black text-slate-950 mb-3">Touch / Mobile Controls</h3>
+                    <div className="grid gap-2 text-xs font-semibold text-slate-800">
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Move Tile</span>
+                        <span className="arcade-pill bg-cyan-300 text-cyan-950 !min-h-7 !py-1 text-[10px]">Tap a Column</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Soft Drop</span>
+                        <span className="arcade-pill bg-emerald-300 text-emerald-950 !min-h-7 !py-1 text-[10px]">Swipe Down</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-[14px] bg-slate-100/80 px-3 py-2">
+                        <span>Hard Drop</span>
+                        <span className="arcade-pill bg-amber-300 text-amber-950 !min-h-7 !py-1 text-[10px]">Double Tap</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  type="button"
+                  className="arcade-button w-full bg-cyan-500 text-white shadow-[0_8px_0_#0e7490] hover:bg-cyan-400 font-black"
+                  onClick={() => setShowGuide(false)}
+                >
+                  Start Building!
                 </button>
               </div>
             </div>
