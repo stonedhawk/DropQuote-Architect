@@ -44,6 +44,24 @@ export const GameBoard = () => {
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <h2 className="text-3xl font-black text-slate-950">Word Tower</h2>
+            
+            {/* Idiot-proof Interactive UI Tooltip */}
+            <div className="relative group inline-block">
+              <span className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-slate-200 text-slate-800 text-xs font-black hover:bg-cyan-300 hover:text-cyan-950 transition-all shadow-[0_2px_0_rgba(15,23,42,0.1)] select-none">
+                ℹ️
+              </span>
+              <div className="pointer-events-none absolute left-1/2 bottom-full mb-3 w-80 -translate-x-1/2 rounded-[22px] border-4 border-white bg-slate-950 text-white p-4 text-xs font-semibold leading-relaxed opacity-0 shadow-2xl transition-opacity duration-200 group-hover:opacity-100 z-30">
+                <p className="font-black text-cyan-300 uppercase tracking-wider text-[10px] mb-2">🚀 30-Second Quick Start</p>
+                <ol className="list-decimal pl-4 space-y-1.5 text-slate-200">
+                  <li>Slide the falling letter tile left or right using your <b>Arrow keys</b> (or tap a column).</li>
+                  <li>Drop the tile to lock it in place.</li>
+                  <li>Form a straight word of <b>3+ letters</b> (forward, backward, horizontal, or vertical) to clear it.</li>
+                  <li>Watch the <b>Pressure meter</b>—if it hits 100%, the tower collapses!</li>
+                </ol>
+                <div className="absolute top-full left-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1.5 bg-slate-950 rotate-45 border-r-4 border-b-4 border-slate-950" />
+              </div>
+            </div>
+
             <span className="arcade-pill bg-cyan-300 text-cyan-950">
               {difficultyStage.label}
             </span>

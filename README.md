@@ -36,7 +36,13 @@ DropQuote Architect's word validation is backed by the [📚 game-ready-dictiona
 
 ## 🎮 How To Play
 
-Your goal is to guide falling letter tiles into optimal columns. When a tile locks at the bottom or on top of another tile, the board scans for valid words of **3 or more letters**.
+### 🚀 30-Second Quick Start (Foolproof Guide)
+If you've never played a word-building falling-block game before, here is the exact step-by-step to start scoring in **under 30 seconds**:
+1. **Watch the falling tile:** A letter tile falls from the top of the board.
+2. **Slide it into position:** Press the `Left / Right Arrow` keys (or tap a column on mobile) to align the tile with your target column.
+3. **Lock the tile:** Let the tile land naturally or press `Spacebar` (double-tap on mobile) to instantly lock it down. It locks as soon as it lands on the bottom floor or on top of another letter.
+4. **Form a straight word:** When the tile locks, the board scans for straight lines of **3 or more letters** vertically or horizontally (reading in both directions, e.g., `C-A-T` or `T-A-C`).
+5. **Clear space & reduce pressure:** The matched word will clear, supported tiles will drop down, and your **Pressure** will decrease. Keep building words to prevent **Pressure from reaching 100%**!
 
 ### Core Gameplay Rules:
 1. **Word Clears:** Words must read in a straight line (horizontal or vertical). Diagonal placements do not count.
